@@ -336,7 +336,6 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials)
     local User = VorpCore.getUser(source) -- Return User with functions and all characters
     local Character = VorpCore.getUser(source).getUsedCharacter
     local playername = Character.firstname .. ' ' .. Character.lastname
-
     for k,v in pairs(materials) do 
        local count = VorpInv.getItemCount(_source, v.name)
         if count - v.amount >= 0 then
@@ -348,7 +347,7 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials)
     end
     if contain(checkingtable, "false") then
         TriggerEvent("vorpCore:canCarryItems", tonumber(_source), 1, function(canCarry)
-            TriggerEvent("vorpCore:canCarryItem", tonumber(_source), v.name,1, function(canCarry2)
+            TriggerEvent("vorpCore:canCarryItem", tonumber(_source), item,1, function(canCarry2)
                 if canCarry and canCarry2 then
                     TriggerClientEvent("syn_weapons:itemcheckpassed",_source,item)
                     TriggerClientEvent("vorp:TipRight", _source,Config2.Language.crafting, 3000)
