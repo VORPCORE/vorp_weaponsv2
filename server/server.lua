@@ -347,8 +347,8 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials)
         table.insert(checkingtable, accepted)
     end
     if contain(checkingtable, "false") then
-        TriggerEvent("vorpCore:canCarryItems", tonumber(_source), count, function(canCarry)
-            TriggerEvent("vorpCore:canCarryItem", tonumber(_source), itemtobuy,count, function(canCarry2)
+        TriggerEvent("vorpCore:canCarryItems", tonumber(_source), 1, function(canCarry)
+            TriggerEvent("vorpCore:canCarryItem", tonumber(_source), itemtobuy,1, function(canCarry2)
                 if canCarry and canCarry2 then
                     TriggerClientEvent("syn_weapons:itemcheckpassed",_source,item)
                     TriggerClientEvent("vorp:TipRight", _source,Config2.Language.crafting, 3000)
