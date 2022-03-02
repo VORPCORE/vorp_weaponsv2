@@ -719,21 +719,21 @@ Citizen.CreateThread( function()
 		elseif WarMenu.IsMenuOpened('weaponz2') then
 			for k,v in pairs(Config5.weaponshops) do 
 				if k == currentshop then 
-					for l,m in pairs(v.weapons) do 
-						if catagory == l then 
-							for j,d in pairs(m) do
+					for l,m in pairs(v.weapons) do     -----  added weapon name instead of hash name. 
+						if category == l then 
+							for weapon,weaponData in pairs(m) do
 								if Config.syndual then 
-									if WarMenu.MenuButton(""..j.." / "..Config2.Language.cost..Config2.Language.dollar..d.price,"shop") then
-										itemprice = d.price
-										itemlabel = j
-										itemtobuy = d.hashname
+									if WarMenu.MenuButton(""..weapon.." / "..Config2.Language.cost..Config2.Language.dollar..weaponData.price,"shop") then
+										itemprice = weaponData.price
+										itemlabel = weapon
+										itemtobuy = weaponData.hashname
 										TriggerServerEvent("syn_weapons:buyweapon",itemtobuy,itemprice,itemlabel)
 									end 
 								else
-									if WarMenu.MenuButton(""..j.." / "..Config2.Language.cost..d.price..Config2.Language.dollar,"shop") then
-										itemlabel = 0
-										itemprice = d.price
-										itemtobuy = d.hashname
+									if WarMenu.MenuButton(""..weapon.." / "..Config2.Language.cost..weaponData.price..Config2.Language.dollar,"shop") then
+										itemlabel = weapon
+										itemprice = weaponData.price
+										itemtobuy = weaponData.hashname
 										TriggerServerEvent("syn_weapons:buyweapon",itemtobuy,itemprice,itemlabel)
 									end 
 								end
