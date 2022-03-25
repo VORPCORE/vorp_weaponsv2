@@ -736,7 +736,7 @@ Citizen.CreateThread( function()
 											itemtobuy = d.item
 											TriggerServerEvent("syn_weapons:buyammo",itemtobuy,itemprice,count)
 										else
-										  TriggerEvent("vorp:TipBottom", Config.Language.invalidamount, 4000)
+										  TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
 										end
 									end)
 								end 
