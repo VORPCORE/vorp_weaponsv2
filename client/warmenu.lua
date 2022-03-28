@@ -219,9 +219,9 @@ function WarMenu.CreateSubMenu(id, parent, subTitle)
 		WarMenu.CreateMenu(id, menus[parent].title)
 
 		if subTitle then
-			setMenuProperty(id, 'subTitle', string.upper(subTitle))
+			setMenuProperty(id, 'subTitle', subTitle)
 		else
-			setMenuProperty(id, 'subTitle', string.upper(menus[parent].subTitle))
+			setMenuProperty(id, 'subTitle', menus[parent].subTitle)
 		end
 
 		setMenuProperty(id, 'previousMenu', parent)
