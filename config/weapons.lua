@@ -546,8 +546,7 @@ Config4.weapons = {
                 item1 = {name = "iron", amount = 12},
                 item2 = {name = "provision_coal", amount = 2},
                 item3 = {name = "Small_Leather", amount = 5},
-            }, 
+            },
         },
-    },
-   
+    },  
 }

@@ -172,7 +172,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                 
                 },
                 ["Poison Bottle"] = {	
-                    hashname = "weapon_thrown_poisonbottle",    
+                    hashname = "WEAPON_THROWN_POISONBOTTLE",    
                     price = 15, 
                 
                 },
@@ -710,7 +710,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                 
                 },
                 ["Poison Bottle"] = {	
-                    hashname = "weapon_thrown_poisonbottle",    
+                    hashname = "WEAPON_THROWN_POISONBOTTLE",    
                     price = 15, 
                 
                 },
@@ -1076,7 +1076,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
 
         }
     },
-    Rhodes = {	  
+  --[[  Rhodes = {	  
         Pos = {x=1323.04, y=-1321.56, z=77.889}, 
         blipsprite = 202506373,
         showblip = true,
@@ -1122,11 +1122,11 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                     price = 10.75, 
                 
                 },
-               --[[  ["Improved Bow"] = {	
+                ["Improved Bow"] = {	
                     hashname = "WEAPON_BOW_IMPROVED",   
                     price = 15,  
                 
-                }, ]]
+                },
             },
             ["Rifles"] = {
                 ["Elephant Rifle"] = {	
@@ -1193,17 +1193,16 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                     price = 10000, 
                 
                 },
-               --[[  ["SemiAuto Pistol "] = {	
+                ["SemiAuto Pistol "] = {	
                     hashname = "WEAPON_PISTOL_SEMIAUTO",    
                     price = 1000, 
                 
-                }, ]]
-             --[[    ["Mauser Pistol "] = {	
+                },
+                ["Mauser Pistol "] = {	
                     hashname = "WEAPON_PISTOL_MAUSER",    
                     price = 1000, 
                 
                 },
-                 ]]
 
             },
             ["Revolvers"] = {
@@ -1247,7 +1246,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                 
                 },
                 ["Poison Bottle"] = {	
-                    hashname = "weapon_thrown_poisonbottle",    
+                    hashname = "WEAPON_THROWN_POISONBOTTLE",    
                     price = 15, 
                 
                 },
@@ -1256,7 +1255,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                     price = 4, 
                 
                 },
-               --[[  ["Dynamite"] = {	
+                ["Dynamite"] = {	
                     hashname = "WEAPON_THROWN_DYNAMITE",    
                     price = 100, 
                 
@@ -1265,15 +1264,15 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                     hashname = "WEAPON_THROWN_MOLOTOV",    
                     price = 100, 
                 
-                }, ]]
+                },
 
             },
             ["Shotguns"] = {
-                --[[ ["Semiauto Shotgun"] = {	
+                ["Semiauto Shotgun"] = {	
                     hashname = "WEAPON_SHOTGUN_SEMIAUTO",    
                     price = 100, 
                 
-                }, ]]
+                },
                 ["Sawedoff Shotgun"] = {	
                     hashname = "WEAPON_SHOTGUN_SAWEDOFF",    
                     price = 250, 
@@ -1612,7 +1611,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
             },
 
         }
-    },
+    }, ]]
     Annesburg = {	  
         Pos = {x=2946.56, y=1319.68, z=44.82}, 
         blipsprite = 202506373,
@@ -1784,7 +1783,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                 
                 },
                 ["Poison Bottle"] = {	
-                    hashname = "weapon_thrown_poisonbottle",    
+                    hashname = "WEAPON_THROWN_POISONBOTTLE",    
                     price = 15, 
                 
                 },
@@ -2321,7 +2320,7 @@ Config5.weaponshops = { -- money for houses bought goes here. sellers have it to
                 
                 },
                 ["Poison Bottle"] = {	
-                    hashname = "weapon_thrown_poisonbottle",    
+                    hashname = "WEAPON_THROWN_POISONBOTTLE",    
                     price = 15, 
                 
                 },
