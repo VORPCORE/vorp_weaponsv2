@@ -536,7 +536,7 @@ Citizen.CreateThread(function()
 						if Config.jobonly then
 							TriggerServerEvent("syn_weapons:getjob")
 							Citizen.Wait(400)
-							if jobcheck(Config.job, playerjob) and playerrank >= Config.jobrankcrafting then
+							if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcrafting then
 								crafting = true
 								WarMenu.OpenMenu('crafting')
 								--TriggerEvent("vorp:TipBottom", Config2.Language.scrolltoexit, 4000)
