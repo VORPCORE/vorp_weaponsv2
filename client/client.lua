@@ -449,7 +449,7 @@ Citizen.CreateThread(function()
 							if Config.jobonly then
 								TriggerServerEvent("syn_weapons:getjob")
 								Citizen.Wait(400)
-								if jobcheck(Config.job, playerjob) and playerrank >= Config.jobrankcustomization then
+								if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcustomization then
 									local closestPlayer, closestDistance, playerid, tgt1 = GetClosestPlayer()
         		   	    			if closestPlayer ~= -1 and closestDistance <= 2.0 then
         		   	    			    TriggerEvent("vorp:TipBottom", Config2.Language.tooclose, 4000)
