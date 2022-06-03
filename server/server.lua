@@ -70,7 +70,7 @@ AddEventHandler("syn_weapons:removeused", function(data)
   local used = 0
   local used2 = 0
   local Parameters = { ['identifier'] = identifier,['used'] = used,['used2'] = used2, ['charidentifier'] = charidentifier } 
-  exports.ghmattimysql:execute("UPDATE loadout Set used=@used AND used2=@used2 WHERE identifier=@identifier AND charidentifier = @charidentifier", Parameters) 
+  exports.ghmattimysql:execute("UPDATE loadout Set used=@used,used2=@used2 WHERE identifier=@identifier AND charidentifier = @charidentifier", Parameters) 
 end)
 
 RegisterServerEvent("syn_weapons:cleanup")
