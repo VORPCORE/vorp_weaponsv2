@@ -268,8 +268,6 @@ AddEventHandler("syn_weapons:initalizing", function()
 						l.price = Config.price.copper
 					elseif l.label == "Nickel" then
 						l.price = Config.price.nickle
-					elseif l.label == "Nickel" then
-						l.price = Config.price.nickle
 					elseif l.label == "Brass" then
 						l.price = Config.price.brass
 					elseif l.label == "Iron" then
@@ -288,8 +286,6 @@ AddEventHandler("syn_weapons:initalizing", function()
 						l.price = Config.price.blacksteel
 					elseif l.label == "Copper" then
 						l.price = Config.price.copper
-					elseif l.label == "Nickel" then
-						l.price = Config.price.nickle
 					elseif l.label == "Nickel" then
 						l.price = Config.price.nickle
 					elseif l.label == "Brass" then
