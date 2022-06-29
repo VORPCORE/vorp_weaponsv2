@@ -189,7 +189,6 @@ Citizen.CreateThread(function()
             VorpInv.RegisterUsableItem(m.item, function(data)
     	    VorpInv.subItem(data.source, m.item, 1)
             if Config.updatedinventoryammo then 
-                print(m.qt)
                 TriggerEvent("syn_weapons:getandcheckammo", data.source, m.key, m.qt,m.item,m.maxammo)
             else 
                 TriggerClientEvent('syn_weapons:getgun', data.source,m.key,m.guncheck,m.qt,m.item,guncheck2,playeritem)
@@ -346,7 +345,7 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy,itemprice,itemlabel)
 end)
 
 RegisterServerEvent("syn_weapons:buyammo")
-AddEventHandler("syn_weapons:buyammo", function(itemtobuy,itemprice,count)
+AddEventHandler("syn_weapons:buyammo", function(itemtobuy,itemprice,count,itemlabel)
     local _source = source
     if count == nil then 
         count = 1
@@ -362,10 +361,10 @@ AddEventHandler("syn_weapons:buyammo", function(itemtobuy,itemprice,count)
             if canCarry and canCarry2 then
                 if total >= 0 then
                     Character.removeCurrency(0, take)
-                    local message = Config2.Language.syn_weapons..playername..Config2.Language.bought..itemtobuy
+                    local message = Config2.Language.syn_weapons..playername..Config2.Language.bought..itemlabel
                     SendWebhookMessage(Config.adminwebhook,message)
                     VorpInv.addItem(_source, itemtobuy, count)
-                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.youboughta..itemtobuy..Config2.Language.fors..take..Config2.Language.dollar, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.youboughta..itemlabel..Config2.Language.fors..take..Config2.Language.dollar, 3000)
                 else
                     TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoney, 3000)
                 end

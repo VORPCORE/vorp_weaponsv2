@@ -27,6 +27,7 @@ local craftingwepitem2
 local inshop = false
 local currentshop
 local itemprice
+local itemlabel
 local category
 local itemtobuy
 local blip
@@ -735,9 +736,10 @@ Citizen.CreateThread( function()
 									TriggerEvent("vorpinputs:getInput",Config2.Language.confirm,Config2.Language.amount, function(cb)
 										local count =     tonumber(cb)
 										if count ~= nil and count ~= 0 and count > 0 then
+											itemlabel = j
 											itemprice = d.price
 											itemtobuy = d.item
-											TriggerServerEvent("syn_weapons:buyammo",itemtobuy,itemprice,count)
+											TriggerServerEvent("syn_weapons:buyammo",itemtobuy,itemprice,count,itemlabel)
 										else
 										  TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
 										end
