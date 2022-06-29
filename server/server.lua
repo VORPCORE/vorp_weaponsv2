@@ -140,6 +140,21 @@ function containsammo(table, element)
   return false , 0
 end
 
+RegisterServerEvent("syn_weapons:removeallammoserver") -- new event 
+AddEventHandler("syn_weapons:removeallammoserver", function()
+    local _source = source
+    local Character = VorpCore.getUser(_source).getUsedCharacter
+    local charidentifier = Character.charIdentifier
+    exports.ghmattimysql:execute('SELECT ammo FROM characters WHERE charidentifier = @charidentifier ' , {['charidentifier'] = charidentifier}, function(result)
+		local ammo = json.decode(result[1].ammo)
+        if next(ammo) ~= nil then 
+            local Parameters = { ['charidentifier'] = charidentifier, ['ammo'] = json.encode({})}
+            exports.ghmattimysql:execute("UPDATE characters Set ammo=@ammo  WHERE charidentifier=@charidentifier", Parameters)    
+            TriggerEvent("vorpinventory:removeammo",_source) 
+        end
+    end)
+end)
+
 RegisterServerEvent("syn_weapons:getandcheckammo")
 AddEventHandler("syn_weapons:getandcheckammo", function(player,key,qt,item,max)
     local _source = player 
@@ -151,7 +166,7 @@ AddEventHandler("syn_weapons:getandcheckammo", function(player,key,qt,item,max)
         if contains then 
             if count >= max then 
                 TriggerClientEvent("syn_weapons:givebackbox",_source,item)
-            else
+            elseif (qt+count) >= max then 
                 qt = max - count
             end
         end
@@ -174,6 +189,7 @@ Citizen.CreateThread(function()
             VorpInv.RegisterUsableItem(m.item, function(data)
     	    VorpInv.subItem(data.source, m.item, 1)
             if Config.updatedinventoryammo then 
+                print(m.qt)
                 TriggerEvent("syn_weapons:getandcheckammo", data.source, m.key, m.qt,m.item,m.maxammo)
             else 
                 TriggerClientEvent('syn_weapons:getgun', data.source,m.key,m.guncheck,m.qt,m.item,guncheck2,playeritem)

@@ -33,6 +33,13 @@ local blip
 local label 
 local prompts = GetRandomIntInRange(0, 0xffffff)
 
+RegisterNetEvent("vorp_weapons:removeallammo") -- new event 
+AddEventHandler("vorp_weapons:removeallammo", function()
+	TriggerServerEvent("syn_weapons:removeallammoserver")
+	Citizen.InvokeNative(0xF25DF915FA38C5F3,PlayerPedId(),1,1)
+	Citizen.InvokeNative(0x1B83C0DEEBCBB214,PlayerPedId())
+end)
+
 function RemoveWeaponComponentFromPed(ped, componentHash, weaponHash)
 	return Citizen.InvokeNative(0x19F70C4D80494FF8, ped, componentHash, weaponHash)
 end
