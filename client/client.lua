@@ -800,7 +800,9 @@ Citizen.CreateThread( function()
 				if k ==craftingammoitem then
 					for l, m in pairs(v) do
 						if l == craftingammoitem2 then
+							if Config.craftingcost then
 								if WarMenu.Button(Config2.Language.craftcost..""..m.craftcost.."$") then end
+							end
 							for x,y in pairs(m.materials) do
 								if WarMenu.Button(y.name.." / "..Config2.Language.count..y.amount) then end 
 							end
@@ -851,7 +853,9 @@ Citizen.CreateThread( function()
 				if k ==craftingammoitem then
 					for l, m in pairs(v) do
 						if l == craftingammoitem2 then
-								if WarMenu.Button(Config2.Language.craftcost..""..m.craftcost.."$") then end	
+								if Config.craftingcost then
+									if WarMenu.Button(Config2.Language.craftcost..""..m.craftcost.."$") then end	
+								end
 							for x,y in pairs(m.materials) do
 								if WarMenu.Button(y.name.." / "..Config2.Language.count..y.amount) then end 
 							end
