@@ -376,12 +376,13 @@ AddEventHandler("syn_weapons:buyammo", function(itemtobuy,itemprice,count,itemla
 end)
 
 RegisterServerEvent("syn_weapons:itemscheck")
-AddEventHandler("syn_weapons:itemscheck", function(item,materials)
+AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
     local _source = source
     local checkingtable = {}
     local accepted
     local User = VorpCore.getUser(source) -- Return User with functions and all characters
     local Character = VorpCore.getUser(source).getUsedCharacter
+    local charmoney = Character.money
     local playername = Character.firstname .. ' ' .. Character.lastname
     for k,v in pairs(materials) do 
        local count = VorpInv.getItemCount(_source, v.name)
@@ -392,6 +393,7 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials)
         end
         table.insert(checkingtable, accepted)
     end
+	if charmoney >= craftcost then
     if contain(checkingtable, "false") then
         TriggerEvent("vorpCore:canCarryItems", tonumber(_source), 1, function(canCarry)
             TriggerEvent("vorpCore:canCarryItem", tonumber(_source), item,1, function(canCarry2)
@@ -413,15 +415,20 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials)
         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
         TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomaterial, 3000)
     end
+else
+    TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
+    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
+end
 end)
 
 RegisterServerEvent("syn_weapons:itemscheck2")
-AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials)
+AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials,craftcost)
     local _source = source
     local checkingtable = {}
     local accepted
     local User = VorpCore.getUser(source) -- Return User with functions and all characters
     local Character = VorpCore.getUser(source).getUsedCharacter
+    local charmoney = Character.money
     local playername = Character.firstname .. ' ' .. Character.lastname
 
     for k,v in pairs(materials) do 
@@ -433,6 +440,7 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials)
         end
         table.insert(checkingtable, accepted)
     end
+	if charmoney >= craftcost then
     if contain(checkingtable, "false") then
         TriggerEvent("vorpCore:canCarryWeapons", tonumber(_source), 1, function(canCarry)
             if canCarry then
@@ -442,6 +450,7 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials)
                 SendWebhookMessage(Config.adminwebhook,message)
                 for k,v in pairs(materials) do 
                     VorpInv.subItem(_source, v.name, v.amount)
+		    TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
                 end
             else
                 TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
@@ -452,6 +461,10 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials)
         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
         TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomaterial, 3000)
     end
+else
+    TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
+    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
+end
 end)
 
 
