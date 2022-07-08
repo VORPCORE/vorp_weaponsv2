@@ -467,8 +467,8 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials,craftco
             TriggerEvent("vorpCore:canCarryWeapons", tonumber(_source), 1, function(canCarry)
                 if canCarry then
                     if charmoney >= craftcost then
-		    TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
                     TriggerClientEvent("syn_weapons:itemcheckpassed2",_source,item,label)
+		    TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
                     TriggerClientEvent("vorp:TipRight", _source, Config2.Language.crafting, 3000)
                     local message = Config2.Language.syn_weapons..playername..Config2.Language.crafted..label
                     SendWebhookMessage(Config.adminwebhook,message)
