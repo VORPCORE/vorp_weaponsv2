@@ -393,7 +393,7 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
         end
         table.insert(checkingtable, accepted)
     end
-	if charmoney >= craftcost then
+	
     if contain(checkingtable, "false") then
         TriggerEvent("vorpCore:canCarryItems", tonumber(_source), 1, function(canCarry)
             TriggerEvent("vorpCore:canCarryItem", tonumber(_source), item,1, function(canCarry2)
@@ -404,7 +404,14 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
                     SendWebhookMessage(Config.adminwebhook,message)
                     for k,v in pairs(materials) do 
                         VorpInv.subItem(_source, v.name, v.amount)
-			TriggerEvent("vorp:removeMoney", _source, 0, craftcost)							
+			if Config.craftingcost then
+			    if charmoney >= craftcost then
+			        TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
+			    else
+    				TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
+    				TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
+			    end
+			end
                     end
                 else
                     TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
@@ -416,10 +423,6 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
         TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomaterial, 3000)
     end
-else
-    TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
-end
 end)
 
 RegisterServerEvent("syn_weapons:itemscheck2")
@@ -441,7 +444,7 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials,craftco
         end
         table.insert(checkingtable, accepted)
     end
-	if charmoney >= craftcost then
+
     if contain(checkingtable, "false") then
         TriggerEvent("vorpCore:canCarryWeapons", tonumber(_source), 1, function(canCarry)
             if canCarry then
@@ -451,7 +454,14 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials,craftco
                 SendWebhookMessage(Config.adminwebhook,message)
                 for k,v in pairs(materials) do 
                     VorpInv.subItem(_source, v.name, v.amount)
-		    TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
+		    if Config.craftingcost then
+			if charmoney >= craftcost then
+			      TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
+		          else
+    			      TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
+    		              TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
+			  end
+		     end
                 end
             else
                 TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
@@ -462,10 +472,6 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials,craftco
         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
         TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomaterial, 3000)
     end
-else
-    TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
-end
 end)
 
 
