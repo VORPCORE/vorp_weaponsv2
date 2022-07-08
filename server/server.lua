@@ -404,6 +404,7 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
                     SendWebhookMessage(Config.adminwebhook,message)
                     for k,v in pairs(materials) do 
                         VorpInv.subItem(_source, v.name, v.amount)
+			TriggerEvent("vorp:removeMoney", _source, 0, craftcost)							
                     end
                 else
                     TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
