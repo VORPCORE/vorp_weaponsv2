@@ -21,6 +21,7 @@ Config.jobrankcrafting = 1
 Config.craftingcost = false
 
 Config.weaponshops = true -- endable or disable weapon shops
+Config.shopsbliponly = false -- enable ONLY if Config.weaponshops is FALSE
 
 Config.craftinganimations = "WORLD_HUMAN_CROUCH_INSPECT" -- animation for crafting
 Config.customizationanimation = "WORLD_HUMAN_WRITE_NOTEBOOK" -- animations for customizations
