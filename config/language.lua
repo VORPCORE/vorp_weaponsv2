@@ -83,4 +83,6 @@ Config2.Language = {
     ["confirm"] = "Confirm",
     ["amount"] = "Amount",
     ["invalidamount"] = "Invalid Amount",
+    ["craftcost"] = "Crafting cost: ",
+    ["nomoneycraft"] = "You Dont have Enough Money for craft",
 }
