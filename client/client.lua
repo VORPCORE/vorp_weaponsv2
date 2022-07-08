@@ -19,6 +19,7 @@ local craftingammoitem
 local craftingammoitem2
 local itemtosend
 local materialtosend
+local craftcost
 local cal = false
 local modelz = false
 local next = next 
@@ -121,6 +122,7 @@ AddEventHandler("syn_weapons:itemcheckpassed", function(item)
  	craftingammoitem2 = nil
  	itemtosend = nil
  	materialtosend = nil
+	craftcost = nil
 	FreezeEntityPosition(PlayerPedId(),false)
 end)
 RegisterNetEvent("syn_weapons:itemcheckpassed2")
@@ -132,6 +134,7 @@ AddEventHandler("syn_weapons:itemcheckpassed2", function(item,label)
  	craftingammoitem2 = nil
  	itemtosend = nil
  	materialtosend = nil
+	craftcost = nil
 	FreezeEntityPosition(PlayerPedId(),false)
 end)
 
@@ -142,6 +145,7 @@ AddEventHandler("syn_weapons:itemcheckfailed", function()
  	craftingammoitem2 = nil
  	itemtosend = nil
  	materialtosend = nil
+	craftcost = nil
 	FreezeEntityPosition(PlayerPedId(),false)
 end)
 
@@ -789,13 +793,16 @@ Citizen.CreateThread( function()
 		elseif WarMenu.IsMenuOpened('wepcraft3') then
 			if WarMenu.Button(Config2.Language.craft) then
 				
-				TriggerServerEvent("syn_weapons:itemscheck2",craftingammoitem2,itemtosend,materialtosend)
+				TriggerServerEvent("syn_weapons:itemscheck2",craftingammoitem2,itemtosend,materialtosend,craftcost)
 				WarMenu.CloseMenu()
 			end 
 			for k,v in pairs(Config4.weapons) do 
 				if k ==craftingammoitem then
 					for l, m in pairs(v) do
-						if l == craftingammoitem2 then 
+						if l == craftingammoitem2 then
+							if Config.craftingcost then
+								if WarMenu.Button(Config2.Language.craftcost..""..m.craftcost.."$") then end
+							end
 							for x,y in pairs(m.materials) do
 								if WarMenu.Button(y.name.." / "..Config2.Language.count..y.amount) then end 
 							end
@@ -815,6 +822,7 @@ Citizen.CreateThread( function()
 											craftingammoitem2 = l
 											materialtosend = m.materials
 											itemtosend = m.hashname
+											craftcost = m.craftcost
 										end 
 									end
 								end
@@ -823,6 +831,7 @@ Citizen.CreateThread( function()
 									craftingammoitem2 = l
 									materialtosend = m.materials
 									itemtosend = m.hashname
+									craftcost = m.craftcost
 								end 
 							end
 						end
@@ -837,13 +846,16 @@ Citizen.CreateThread( function()
 			end
 		elseif WarMenu.IsMenuOpened('ammocraft3') then
 			if WarMenu.Button(Config2.Language.craft) then
-				TriggerServerEvent("syn_weapons:itemscheck",itemtosend,materialtosend)
+				TriggerServerEvent("syn_weapons:itemscheck",itemtosend,materialtosend,craftcost)
 				WarMenu.CloseMenu()
 			end 
 			for k,v in pairs(Config3.ammo) do 
 				if k ==craftingammoitem then
 					for l, m in pairs(v) do
-						if l == craftingammoitem2 then 
+						if l == craftingammoitem2 then
+								if Config.craftingcost then
+									if WarMenu.Button(Config2.Language.craftcost..""..m.craftcost.."$") then end	
+								end
 							for x,y in pairs(m.materials) do
 								if WarMenu.Button(y.name.." / "..Config2.Language.count..y.amount) then end 
 							end
@@ -863,6 +875,7 @@ Citizen.CreateThread( function()
 											craftingammoitem2 = l
 											materialtosend = m.materials
 											itemtosend = m.item
+											craftcost = m.craftcost
 										end 
 									end
 								end
@@ -871,6 +884,7 @@ Citizen.CreateThread( function()
 									craftingammoitem2 = l
 									materialtosend = m.materials
 									itemtosend = m.item
+									craftcost = m.craftcost
 								end 
 							end
 						end
@@ -885,6 +899,7 @@ Citizen.CreateThread( function()
  				craftingammoitem2 = nil
  				itemtosend = nil
  				materialtosend = nil
+				craftcost = nil
 				FreezeEntityPosition(PlayerPedId(),false)
 				WarMenu.CloseMenu()
 			end

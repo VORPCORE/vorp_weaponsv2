@@ -18,6 +18,7 @@ Config.jobonly = true -- only players with mentioned jobs below can access craft
 Config.job ={ "gunsmith", "rguns"}
 Config.jobrankcustomization = 2
 Config.jobrankcrafting = 1
+Config.craftingcost = false
 
 Config.weaponshops = true -- endable or disable weapon shops
 
