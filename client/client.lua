@@ -604,7 +604,7 @@ Citizen.CreateThread(function()
 end)
 
 Citizen.CreateThread(function()
-	if Config.weaponshops then
+	if Config.weaponshops or Config.shopsbliponly then
     	Citizen.Wait(1000)
 		for k,v in pairs(Config5.weaponshops) do 
 			if v.showblip then
