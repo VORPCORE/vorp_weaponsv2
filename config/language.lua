@@ -1,5 +1,4 @@
-Config2 = {}
-Config2.Language = {
+Config.Language = {
     ["presstobuy"] = "Customize Weapons",
     ["presstocraft"] = " Craft Weapons",
     ["presstoshop"] = "Gunsmith Shop",
@@ -13,7 +12,9 @@ Config2.Language = {
     ["dollar"] = " $",
 
 
-
+    closed = "~e~CLOSED ~o~",
+    am = ":00~q~am to ~o~",
+    pm = ":00~q~pm",
     ["craftingloading"] = "Crafting...",
     ["customloading"] = "Crafting Cuztomizations..",
     ["pleaserequip"] = "lease requip your weapon from inventory",
