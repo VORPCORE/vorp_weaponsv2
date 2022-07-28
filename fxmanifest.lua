@@ -19,7 +19,7 @@ shared_scripts {
 }
 
 --dont touch
-version '1.0'
+version '2.0'
 vorp_checker 'yes'
 vorp_name '^4Resource version Check^3'
 vorp_github 'https://github.com/VORPCORE/vorp_weaponsv2'
