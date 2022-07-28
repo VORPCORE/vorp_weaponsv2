@@ -1,3 +1,4 @@
+Config = {}
 Config.ammo = { -- both crafting and shops
     ["Repeater"] = {
         ["Repeater Ammo Normal"] = {

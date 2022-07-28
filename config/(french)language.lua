@@ -1,3 +1,4 @@
+Config = {}
 Config.Language = {
     ["presstobuy"] = "Waffen anpassen",
     ["presstocraft"] = "Waffen herstellen",

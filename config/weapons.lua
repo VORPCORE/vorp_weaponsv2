@@ -1,3 +1,4 @@
+Config = {}
 Config.weapons = {  
     ["Melee"] = {
         ["Tradders Knife"] = {	
