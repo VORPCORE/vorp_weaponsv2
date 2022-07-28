@@ -9,9 +9,13 @@ client_script {
 server_script {
   'server/*.lua'
 }
+
 shared_scripts {
   'config/config.lua',
-  'config/*.lua',
+  'config/ammo.lua',
+  'config/language.lua',
+  'config/weapons.lua',
+  'config/shops.lua',
 }
 
 --dont touch
