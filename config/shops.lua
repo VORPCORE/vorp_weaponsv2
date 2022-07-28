@@ -439,7 +439,7 @@ Config.Stores = { -- money for houses bought goes here. sellers have it to colle
                 ["Arrow Normal"] = {
                    
                     price = .5, 
-                    item = "ammoarrmownormal",
+                    item = "ammoarrownormal",
                     
                 },
                 --[[ ["Arrow Dynamite"] = {
