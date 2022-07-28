@@ -1,5 +1,4 @@
-Config3 = {}
-Config3.ammo = { -- both crafting and shops
+Config.ammo = { -- both crafting and shops
     ["Repeater"] = {
         ["Repeater Ammo Normal"] = {
             key = "AMMO_REPEATER",-- DO NOT CHANGE THESE  
