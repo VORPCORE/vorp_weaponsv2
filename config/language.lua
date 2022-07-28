@@ -1,5 +1,4 @@
-Config2 = {}
-Config2.Language = {
+Config.Language = {
     ["presstobuy"] = "Customize Weapons",
     ["presstocraft"] = " Craft Weapons",
     ["presstoshop"] = "Gunsmith Shop",
