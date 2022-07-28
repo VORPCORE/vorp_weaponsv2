@@ -1,5 +1,5 @@
-Config = {}
-Config.weapons = {  
+Config4 = {}
+Config4.weapons = {  
     ["Melee"] = {
         ["Tradders Knife"] = {	
             hashname = "WEAPON_MELEE_KNIFE_TRADER",   

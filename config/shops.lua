@@ -1,5 +1,5 @@
-Config = {}
-Config.Stores = { -- money for houses bought goes here. sellers have it to collected from here. 
+Config5 = {}
+Config5.Stores = { -- money for houses bought goes here. sellers have it to collected from here. 
     Valentine = {	   -- you can add more wep markets by copy pasting this 
         Pos = vector3(-280.4646, 779.0331, 119.2540), -- location of wep market 
         blipsprite = 202506373, -- blip sprite for wep market
