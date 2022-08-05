@@ -1,7 +1,9 @@
-<2.2>
-Fix Issues with config
-
+<2.1>
+- Fix Issues with config
+- added store hours
+- added npcs that removes when closed
+- added blips that remove whn close
+- update all files
 <2.0>
-Refactored the entire shop system
-
+- features
 <1.0>
