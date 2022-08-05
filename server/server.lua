@@ -1,5 +1,5 @@
 
-
+local VorpCore = {}
 
 TriggerEvent("getCore",function(core)
     VorpCore = core
@@ -9,9 +9,6 @@ VorpInv = exports.vorp_inventory:vorp_inventoryApi()
 
 RegisterServerEvent("syn_weapons:addcomp")
 AddEventHandler("syn_weapons:addcomp", function(weaponid,added)
-    local _source = source
-    local User = VorpCore.getUser(source) 
-    local Character = VorpCore.getUser(source).getUsedCharacter
     local components = json.encode(added)
     if weaponid ~= nil then
         local Parameters = { ['id'] = weaponid, ['comps'] = components } 
@@ -23,7 +20,6 @@ RegisterServerEvent("syn_weapons:weaponused")
 AddEventHandler("syn_weapons:weaponused", function(data)
     local _source = source
     local id = data.id
-    local next = next
     local hash = data.hash 
     exports.ghmattimysql:execute('SELECT comps, used2 FROM loadout WHERE id = @id ' , {['id'] = id}, function(result)
         if result[1] ~= nil then 
@@ -109,10 +105,10 @@ AddEventHandler("syn_weapons:checkmoney", function(sum)
             elseif Config.customizationcurrency == 1 then
                 Character.removeCurrency(1, sum)
             end
-            TriggerClientEvent("vorp:TipRight", _source, Config.Language.craftingwepmods, 3000)
+            TriggerClientEvent("vorp:TipRight", _source, Config2.Language.craftingwepmods, 3000)
             TriggerClientEvent("syn_weapons:applymods",_source)
         else
-            TriggerClientEvent("vorp:TipRight", _source, Config.Language.cantafford, 3000)
+            TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantafford, 3000)
             TriggerClientEvent("syn_weapons:nomods",_source)
         end
     end
@@ -123,8 +119,6 @@ AddEventHandler("syn_weapons:getjob", function()
   local _source = source
   local User = VorpCore.getUser(_source)
   local Character = User.getUsedCharacter
-  local identifier = Character.identifier
-  local charidentifier = Character.charIdentifier
   local job = Character.job
   local rank = Character.jobGrade
   TriggerClientEvent("syn_weapons:findjob", _source,job,rank)
@@ -176,7 +170,7 @@ end)
 
 Citizen.CreateThread(function()
     Citizen.Wait(1000)
-    for k,v in pairs(Config.ammo) do 
+    for k,v in pairs(Config5.ammo) do 
         for l,m in pairs(v) do 
             local guncheck2 = 0
             local playeritem = 0
@@ -210,14 +204,11 @@ function contains(table, element)
 RegisterServerEvent("syn_weapons:addammo")
 AddEventHandler("syn_weapons:addammo", function(wephash,qt,key,playeritem,item)
     local _source = source
-    local User = VorpCore.getUser(source) -- Return User with functions and all characters
-    local Character = VorpCore.getUser(source).getUsedCharacter
+    local Character = VorpCore.getUser(_source).getUsedCharacter
     local identifier = Character.identifier
     local charidentifier = Character.charIdentifier
-    local used = 1
     local weapid
     local max
-    local inventory = Character.inventory
     exports.ghmattimysql:execute('SELECT name,id,ammo FROM loadout WHERE identifier=@identifier AND charidentifier = @charidentifier ' , {['identifier'] = identifier, ['charidentifier'] = charidentifier}, function(result)
         if result[1] ~= nil then 
             for i=1, #result, 1 do
@@ -233,7 +224,7 @@ AddEventHandler("syn_weapons:addammo", function(wephash,qt,key,playeritem,item)
                     end
                 end
             end
-            for k,v in pairs(Config.ammo) do
+            for k,v in pairs(Config5.ammo) do
                 for l,m in pairs(v) do
                     if m.key == key then 
                         max = m.maxammo
@@ -315,8 +306,7 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy,itemprice,itemlabel)
         Config.syndual = false 
     end
     local _source = source
-    local User = VorpCore.getUser(source) -- Return User with functions and all characters
-    local Character = VorpCore.getUser(source).getUsedCharacter
+    local Character = VorpCore.getUser(_source).getUsedCharacter
     local playername = Character.firstname .. ' ' .. Character.lastname
     local money = Character.money
     local total = money - itemprice
@@ -324,22 +314,22 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy,itemprice,itemlabel)
         if canCarry then
             if total >= 0 then
                 Character.removeCurrency(0, itemprice)
-                local message = Config.Language.syn_weapons..playername..Config.Language.bought..itemtobuy
+                local message = Config2.Language.syn_weapons..playername..Config2.Language.bought..itemtobuy
                 SendWebhookMessage(Config.adminwebhook,message)
                 local ammo = {["nothing"] = 0}
                 local components =  {["nothing"] = 0}
                 if Config.syndual == false then
                     VorpInv.createWeapon(tonumber(_source), itemtobuy:upper(), ammo, components)
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.youboughta..itemlabel..Config.Language.fors..itemprice..Config.Language.dollar, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.youboughta..itemlabel..Config2.Language.fors..itemprice..Config2.Language.dollar, 3000)
                 else
                     VorpInv.createWeapon(tonumber(_source), itemtobuy, itemlabel)
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.youboughta..itemlabel..Config.Language.fors..Config.Language.dollar..itemprice, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.youboughta..itemlabel..Config2.Language.fors..Config2.Language.dollar..itemprice, 3000)
                 end
             else
-                TriggerClientEvent("vorp:TipRight", _source, Config.Language.nomoney, 3000)
+                TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoney, 3000)
             end
         else
-            TriggerClientEvent("vorp:TipRight", _source, Config.Language.cantcarrywep, 3000)
+            TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarrywep, 3000)
         end
     end)
 end)
@@ -350,26 +340,26 @@ AddEventHandler("syn_weapons:buyammo", function(itemtobuy,itemprice,count,itemla
     if count == nil then 
         count = 1
     end
-    local User = VorpCore.getUser(source) -- Return User with functions and all characters
-    local Character = VorpCore.getUser(source).getUsedCharacter
+    local Character = VorpCore.getUser(_source).getUsedCharacter
     local playername = Character.firstname .. ' ' .. Character.lastname
     local money = Character.money
     local take = itemprice * count
     local total = money - take
+
     TriggerEvent("vorpCore:canCarryItems", tonumber(_source), count, function(canCarry)
         TriggerEvent("vorpCore:canCarryItem", tonumber(_source), itemtobuy,count, function(canCarry2)
             if canCarry and canCarry2 then
                 if total >= 0 then
                     Character.removeCurrency(0, take)
-                    local message = Config.Language.syn_weapons..playername..Config.Language.bought..itemlabel
+                    local message = Config2.Language.syn_weapons..playername..Config2.Language.bought..itemlabel
                     SendWebhookMessage(Config.adminwebhook,message)
                     VorpInv.addItem(_source, itemtobuy, count)
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.youboughta..itemlabel..Config.Language.fors..take..Config.Language.dollar, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.youboughta..itemlabel..Config2.Language.fors..take..Config2.Language.dollar, 3000)
                 else
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.nomoney, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoney, 3000)
                 end
             else
-                TriggerClientEvent("vorp:TipRight", _source, Config.Language.cantcarryitem, 3000)
+                TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarryitem, 3000)
             end
         end)
     end)
@@ -380,8 +370,8 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
     local _source = source
     local checkingtable = {}
     local accepted
-    local User = VorpCore.getUser(source) -- Return User with functions and all characters
-    local Character = VorpCore.getUser(source).getUsedCharacter
+
+    local Character = VorpCore.getUser(_source).getUsedCharacter
     local charmoney = Character.money
     local playername = Character.firstname .. ' ' .. Character.lastname
     for k,v in pairs(materials) do 
@@ -402,19 +392,19 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
                         if charmoney >= craftcost then
                         TriggerClientEvent("syn_weapons:itemcheckpassed",_source,item)
                         TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
-                        TriggerClientEvent("vorp:TipRight", _source,Config.Language.crafting, 3000)
-                        local message = Config.Language.syn_weapons..playername..Config.Language.crafted..item
+                        TriggerClientEvent("vorp:TipRight", _source,Config2.Language.crafting, 3000)
+                        local message = Config2.Language.syn_weapons..playername..Config2.Language.crafted..item
                         SendWebhookMessage(Config.adminwebhook,message)
                         for k,v in pairs(materials) do 
                             VorpInv.subItem(_source, v.name, v.amount)							
                         end
                     else
                         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-                        TriggerClientEvent("vorp:TipRight", _source, Config.Language.nomoneycraft, 3000)
+                        TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
                     end
                     else
                         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-                        TriggerClientEvent("vorp:TipRight", _source, Config.Language.cantcarryitem, 3000)
+                        TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarryitem, 3000)
                     end
                 end)
             end)
@@ -423,22 +413,22 @@ AddEventHandler("syn_weapons:itemscheck", function(item,materials,craftcost)
             TriggerEvent("vorpCore:canCarryItem", tonumber(_source), item,1, function(canCarry2)
                 if canCarry and canCarry2 then
                     TriggerClientEvent("syn_weapons:itemcheckpassed",_source,item)
-                    TriggerClientEvent("vorp:TipRight", _source,Config.Language.crafting, 3000)
-                    local message = Config.Language.syn_weapons..playername..Config.Language.crafted..item
+                    TriggerClientEvent("vorp:TipRight", _source,Config2.Language.crafting, 3000)
+                    local message = Config2.Language.syn_weapons..playername..Config2.Language.crafted..item
                     SendWebhookMessage(Config.adminwebhook,message)
                     for k,v in pairs(materials) do 
                         VorpInv.subItem(_source, v.name, v.amount)							
                     end
                 else
                     TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.cantcarryitem, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarryitem, 3000)
                 end
             end)
         end)
     end
     else
         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-        TriggerClientEvent("vorp:TipRight", _source, Config.Language.nomaterial, 3000)
+        TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomaterial, 3000)
     end
 end)
 
@@ -447,8 +437,7 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials,craftco
     local _source = source
     local checkingtable = {}
     local accepted
-    local User = VorpCore.getUser(source) -- Return User with functions and all characters
-    local Character = VorpCore.getUser(source).getUsedCharacter
+    local Character = VorpCore.getUser(_source).getUsedCharacter
     local charmoney = Character.money
     local playername = Character.firstname .. ' ' .. Character.lastname
 
@@ -469,39 +458,39 @@ AddEventHandler("syn_weapons:itemscheck2", function(label,item,materials,craftco
                     if charmoney >= craftcost then
                     TriggerClientEvent("syn_weapons:itemcheckpassed2",_source,item,label)
 		    TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.crafting, 3000)
-                    local message = Config.Language.syn_weapons..playername..Config.Language.crafted..label
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.crafting, 3000)
+                    local message = Config2.Language.syn_weapons..playername..Config2.Language.crafted..label
                     SendWebhookMessage(Config.adminwebhook,message)
                     for k,v in pairs(materials) do 
                         VorpInv.subItem(_source, v.name, v.amount)
                     end
                 else
                     TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.nomoneycraft, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomoneycraft, 3000)
                 end
                 else
                     TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-                    TriggerClientEvent("vorp:TipRight", _source, Config.Language.cantcarrywep, 3000)
+                    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarrywep, 3000)
                 end
             end)
         else
         TriggerEvent("vorpCore:canCarryWeapons", tonumber(_source), 1, function(canCarry)
             if canCarry then
                 TriggerClientEvent("syn_weapons:itemcheckpassed2",_source,item,label)
-                TriggerClientEvent("vorp:TipRight", _source, Config.Language.crafting, 3000)
-                local message = Config.Language.syn_weapons..playername..Config.Language.crafted..label
+                TriggerClientEvent("vorp:TipRight", _source, Config2.Language.crafting, 3000)
+                local message = Config2.Language.syn_weapons..playername..Config2.Language.crafted..label
                 SendWebhookMessage(Config.adminwebhook,message)
                 for k,v in pairs(materials) do 
                     VorpInv.subItem(_source, v.name, v.amount)
                 end
             else
                 TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-                TriggerClientEvent("vorp:TipRight", _source, Config.Language.cantcarrywep, 3000)
+                TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarrywep, 3000)
             end
         end)
     end
     else
         TriggerClientEvent("syn_weapons:itemcheckfailed",_source)
-        TriggerClientEvent("vorp:TipRight", _source, Config.Language.nomaterial, 3000)
+        TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomaterial, 3000)
     end
 end)

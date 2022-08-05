@@ -4,18 +4,18 @@ game "rdr3"
 file 'wepcomps.json'
 
 client_script {
-  'client/*lua'
+  'client/warmenu.lua',
+  'client/client.lua'
 }
 server_script {
-  'server/*.lua'
+  'server/server.lua'
 }
-
 shared_scripts {
-  'config/config.lua',
-  'config/ammo.lua',
-  'config/language.lua',
-  'config/weapons.lua',
   'config/shops.lua',
+  'config/weapons.lua',
+  'config/language.lua',
+  'config/ammo.lua',
+  'config/config.lua'
 }
 
 --dont touch
