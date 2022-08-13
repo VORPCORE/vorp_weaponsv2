@@ -265,7 +265,7 @@ Config4 = {
                 hashname = "WEAPON_PISTOL_VOLCANIC",   
                 jobonly = false,
                 jobs = {"police","gunsmith","rguns"}, 
-                letcraft = flase, -- show in crafting u can toggle this to false if you want to make this weapon sellable but not craftable
+                letcraft = false, -- show in crafting u can toggle this to false if you want to make this weapon sellable but not craftable
                 craftcost = 0,
                 materials = {
                     item1 = {name = "iron", amount = 2},
