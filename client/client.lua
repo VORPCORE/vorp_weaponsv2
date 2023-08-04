@@ -882,6 +882,7 @@ Citizen.CreateThread(function()
 									WarMenu.CloseMenu()
 									TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language.amount, function(cb)
 										local count = tonumber(cb)
+                                                                                 count = math.floor(count) -- prevent decimals
 										if count ~= nil and count ~= 0 and count > 0 then
 											itemlabel = j
 											itemprice = d.price
