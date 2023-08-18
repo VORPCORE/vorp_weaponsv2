@@ -331,7 +331,7 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy,itemprice,itemlabel)
         else
             TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarrywep, 3000)
         end
-    end)
+    end,itemtobuy:upper())
 end)
 
 RegisterServerEvent("syn_weapons:buyammo")
