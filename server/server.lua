@@ -310,7 +310,7 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy,itemprice,itemlabel)
     local playername = Character.firstname .. ' ' .. Character.lastname
     local money = Character.money
     local total = money - itemprice
-    VorpCore.canCarryWeapons(_source, 1, itemtobuy:upper() function(canCarry)
+    VorpCore.canCarryWeapons(_source, 1, function(canCarry)
         if canCarry then
             if total >= 0 then
                 Character.removeCurrency(0, itemprice)
@@ -331,7 +331,7 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy,itemprice,itemlabel)
         else
             TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarrywep, 3000)
         end
-    end)
+    end,itemtobuy:upper())
 end)
 
 RegisterServerEvent("syn_weapons:buyammo")
