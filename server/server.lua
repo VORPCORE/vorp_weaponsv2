@@ -65,10 +65,14 @@ AddEventHandler("syn_weapons:removeused", function(data)
     local charidentifier = Character.charIdentifier
     local used = 0
     local used2 = 0
-    local Parameters = { ['identifier'] = identifier, ['used'] = used, ['used2'] = used2,
-        ['charidentifier'] = charidentifier }
+    local Parameters = {
+        ['identifier'] = identifier,
+        ['used'] = used,
+        ['used2'] = used2,
+        ['charidentifier'] = charidentifier
+    }
     exports.ghmattimysql:execute(
-    "UPDATE loadout Set used=@used,used2=@used2 WHERE identifier=@identifier AND charidentifier = @charidentifier",
+        "UPDATE loadout Set used=@used,used2=@used2 WHERE identifier=@identifier AND charidentifier = @charidentifier",
         Parameters)
 end)
 
@@ -144,14 +148,14 @@ AddEventHandler("syn_weapons:removeallammoserver", function()
     local charidentifier = Character.charIdentifier
     exports.ghmattimysql:execute('SELECT ammo FROM characters WHERE charidentifier = @charidentifier ',
         { ['charidentifier'] = charidentifier }, function(result)
-        local ammo = json.decode(result[1].ammo)
-        if next(ammo) ~= nil then
-            local Parameters = { ['charidentifier'] = charidentifier, ['ammo'] = json.encode({}) }
-            exports.ghmattimysql:execute("UPDATE characters Set ammo=@ammo  WHERE charidentifier=@charidentifier",
-                Parameters)
-            TriggerEvent("vorpinventory:removeammo", _source)
-        end
-    end)
+            local ammo = json.decode(result[1].ammo)
+            if next(ammo) ~= nil then
+                local Parameters = { ['charidentifier'] = charidentifier, ['ammo'] = json.encode({}) }
+                exports.ghmattimysql:execute("UPDATE characters Set ammo=@ammo  WHERE charidentifier=@charidentifier",
+                    Parameters)
+                TriggerEvent("vorpinventory:removeammo", _source)
+            end
+        end)
 end)
 
 RegisterServerEvent("syn_weapons:getandcheckammo")
@@ -161,18 +165,20 @@ AddEventHandler("syn_weapons:getandcheckammo", function(player, key, qt, item, m
     local charidentifier = Character.charIdentifier
     exports.ghmattimysql:execute('SELECT ammo FROM characters WHERE charidentifier = @charidentifier ',
         { ['charidentifier'] = charidentifier }, function(result)
-        local ammo = json.decode(result[1].ammo)
-        local contains, count = containsammo(ammo, key)
-        if contains then
-            if count >= max then
-                TriggerClientEvent("syn_weapons:givebackbox", _source, item)
-            elseif (qt + count) >= max then
-                qt = max - count
+            local ammo = json.decode(result[1].ammo)
+            local contains, count = containsammo(ammo, key)
+            if contains then
+                if count >= max then
+                    return --TriggerClientEvent("syn_weapons:givebackbox", _source, item)
+                elseif (qt + count) >= max then
+                    qt = max - count
+                end
             end
-        end
-        TriggerEvent("vorpCore:addBullets", _source, key, qt)
-    end)
+            VorpInv.subItem(_source, item, 1)
+            TriggerEvent("vorpCore:addBullets", _source, key, qt)
+        end)
 end)
+
 
 Citizen.CreateThread(function()
     Citizen.Wait(1000)
@@ -187,7 +193,6 @@ Citizen.CreateThread(function()
                 playeritem = m.playeritem
             end
             VorpInv.RegisterUsableItem(m.item, function(data)
-                VorpInv.subItem(data.source, m.item, 1)
                 if Config.updatedinventoryammo then
                     TriggerEvent("syn_weapons:getandcheckammo", data.source, m.key, m.qt, m.item, m.maxammo)
                 else
@@ -217,58 +222,58 @@ AddEventHandler("syn_weapons:addammo", function(wephash, qt, key, playeritem, it
     local weapid
     local max
     exports.ghmattimysql:execute(
-    'SELECT name,id,ammo FROM loadout WHERE identifier=@identifier AND charidentifier = @charidentifier ',
+        'SELECT name,id,ammo FROM loadout WHERE identifier=@identifier AND charidentifier = @charidentifier ',
         { ['identifier'] = identifier, ['charidentifier'] = charidentifier }, function(result)
-        if result[1] ~= nil then
-            for i = 1, #result, 1 do
-                if playeritem == 0 then
-                    if GetHashKey(result[i].name) == wephash then
-                        weapid = result[i].id
-                    end
-                elseif playeritem ~= 0 then
-                    for k, v in pairs(playeritem) do
-                        if v == result[i].name then
+            if result[1] ~= nil then
+                for i = 1, #result, 1 do
+                    if playeritem == 0 then
+                        if GetHashKey(result[i].name) == wephash then
                             weapid = result[i].id
                         end
-                    end
-                end
-            end
-            for k, v in pairs(Config5.ammo) do
-                for l, m in pairs(v) do
-                    if m.key == key then
-                        max = m.maxammo
-                    end
-                end
-            end
-            if weapid ~= nil then
-                exports.ghmattimysql:execute('SELECT ammo FROM loadout WHERE id = @id ', { ['id'] = weapid },
-                    function(result)
-                        if result[1] ~= nil then
-                            local ammo = json.decode(result[1].ammo)
-                            if contains(ammo, key) then
-                                if (ammo[key] + qt) > max then
-                                    qt = max - ammo[key]
-                                    ammo[key] = max
-                                else
-                                    ammo[key] = ammo[key] + qt
-                                end
-                            else
-                                ammo[key] = tonumber(qt)
-                            end
-                            if qt > 0 then
-                                TriggerEvent("vorpCore:addBullets", _source, weapid, key, qt)
-                                exports.ghmattimysql:execute("UPDATE loadout Set ammo=@ammo WHERE id=@id",
-                                    { ['id'] = weapid, ['ammo'] = json.encode(ammo) })
-                            else
-                                TriggerClientEvent("syn_weapons:givebackbox", _source, item)
+                    elseif playeritem ~= 0 then
+                        for k, v in pairs(playeritem) do
+                            if v == result[i].name then
+                                weapid = result[i].id
                             end
                         end
-                    end)
-            else
-                TriggerClientEvent("syn_weapons:givebackbox", _source, item)
+                    end
+                end
+                for k, v in pairs(Config5.ammo) do
+                    for l, m in pairs(v) do
+                        if m.key == key then
+                            max = m.maxammo
+                        end
+                    end
+                end
+                if weapid ~= nil then
+                    exports.ghmattimysql:execute('SELECT ammo FROM loadout WHERE id = @id ', { ['id'] = weapid },
+                        function(result)
+                            if result[1] ~= nil then
+                                local ammo = json.decode(result[1].ammo)
+                                if contains(ammo, key) then
+                                    if (ammo[key] + qt) > max then
+                                        qt = max - ammo[key]
+                                        ammo[key] = max
+                                    else
+                                        ammo[key] = ammo[key] + qt
+                                    end
+                                else
+                                    ammo[key] = tonumber(qt)
+                                end
+                                if qt > 0 then
+                                    TriggerEvent("vorpCore:addBullets", _source, weapid, key, qt)
+                                    exports.ghmattimysql:execute("UPDATE loadout Set ammo=@ammo WHERE id=@id",
+                                        { ['id'] = weapid, ['ammo'] = json.encode(ammo) })
+                                else
+                                    TriggerClientEvent("syn_weapons:givebackbox", _source, item)
+                                end
+                            end
+                        end)
+                else
+                    TriggerClientEvent("syn_weapons:givebackbox", _source, item)
+                end
             end
-        end
-    end)
+        end)
 end)
 
 RegisterServerEvent("syn_weapons:givebackbox")
@@ -408,7 +413,7 @@ AddEventHandler("syn_weapons:itemscheck", function(item, materials, craftcost)
                             TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
                             TriggerClientEvent("vorp:TipRight", _source, Config2.Language.crafting, 3000)
                             local message = Config2.Language.syn_weapons .. playername .. Config2.Language.crafted ..
-                            item
+                                item
                             SendWebhookMessage(Config.adminwebhook, message)
                             for k, v in pairs(materials) do
                                 VorpInv.subItem(_source, v.name, v.amount)
