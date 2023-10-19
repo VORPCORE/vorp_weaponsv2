@@ -170,6 +170,8 @@ AddEventHandler("syn_weapons:getandcheckammo", function(player, key, qt, item, m
             if contains then
                 if count >= max then
                     return --TriggerClientEvent("syn_weapons:givebackbox", _source, item)
+                elseif max <= (qt+count) then
+                    return
                 elseif (qt + count) >= max then
                     qt = max - count
                 end
