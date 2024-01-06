@@ -99,26 +99,24 @@ AddEventHandler("syn_weapons:checkmoney", function(sum)
     local Character = VorpCore.getUser(source).getUsedCharacter
     local money = Character.money
     local gold = Character.gold
-    local total
+
     if Config.customizationcurrency == 0 then
-        total = money - sum
-    elseif Config.customizationcurrency == 1 then
-        total = gold - sum
-    end
-    if total ~= nil then
-        if total >= 0 then
-            if Config.customizationcurrency == 0 then
-                Character.removeCurrency(0, sum)
-            elseif Config.customizationcurrency == 1 then
-                Character.removeCurrency(1, sum)
+             if money < sum then
+                  TriggerClientEvent("syn_weapons:nomods", _source)
+                return  TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantafford, 3000)
             end
-            TriggerClientEvent("vorp:TipRight", _source, Config2.Language.craftingwepmods, 3000)
-            TriggerClientEvent("syn_weapons:applymods", _source)
-        else
-            TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantafford, 3000)
-            TriggerClientEvent("syn_weapons:nomods", _source)
-        end
+             Character.removeCurrency(0, sum)
+    elseif Config.customizationcurrency == 1 then
+            if gold < sum then
+                  TriggerClientEvent("syn_weapons:nomods", _source)
+                return  TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantafford, 3000)
+            end
+             Character.removeCurrency(1, sum)
     end
+
+    TriggerClientEvent("vorp:TipRight", _source, Config2.Language.craftingwepmods, 3000)
+    TriggerClientEvent("syn_weapons:applymods", _source)
+
 end)
 
 RegisterServerEvent("syn_weapons:getjob")
@@ -327,7 +325,7 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy, itemprice, itemlabe
     local total = money - itemprice
     VorpInv.canCarryWeapons(_source, 1, function(canCarry)
         if canCarry then
-            if total >= 0 then
+            if money < itemprice then
                 Character.removeCurrency(0, itemprice)
                 local message = Config2.Language.syn_weapons .. playername .. Config2.Language.bought .. itemtobuy
                 SendWebhookMessage(Config.adminwebhook, message)
