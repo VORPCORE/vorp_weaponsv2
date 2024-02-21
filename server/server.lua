@@ -325,7 +325,7 @@ AddEventHandler("syn_weapons:buyweapon", function(itemtobuy, itemprice, itemlabe
     local total = money - itemprice
     VorpInv.canCarryWeapons(_source, 1, function(canCarry)
         if canCarry then
-            if money < itemprice then
+            if money > itemprice then
                 Character.removeCurrency(0, itemprice)
                 local message = Config2.Language.syn_weapons .. playername .. Config2.Language.bought .. itemtobuy
                 SendWebhookMessage(Config.adminwebhook, message)
