@@ -1,6 +1,5 @@
 local _, wepHash
 local compss = {}
-local elements = {}
 local wep
 local added = {}
 local weaponid
@@ -12,8 +11,6 @@ local createdobject = false
 local h
 local roll
 local pricing = {}
-local playerjob
-local playerrank
 local crafting = false
 local craftingammoitem
 local craftingammoitem2
@@ -23,8 +20,6 @@ local craftcost
 local cal = false
 local modelz = false
 local next = next
-local craftingwepitem
-local craftingwepitem2
 local inshop = false
 local currentshop
 local itemprice
@@ -34,50 +29,66 @@ local OpenStores
 local CloseStores
 local itemtobuy
 local blip
-local label
 local OpenGroup = GetRandomIntInRange(0, 0xffffff)
 local CloseGroup = GetRandomIntInRange(0, 0xffffff)
-local prompts = GetRandomIntInRange(0, 0xffffff)
-local progressbar = exports.vorp_progressbar:initiate()
 
-RegisterNetEvent("vorp_weapons:removeallammo") -- new event 
+--local progressbar = exports.vorp_progressbar:initiate()
+local Core = exports.vorp_core:GetCore()
+
+RegisterNetEvent("vorp_weapons:removeallammo") -- new event
 AddEventHandler("vorp_weapons:removeallammo", function()
 	TriggerServerEvent("syn_weapons:removeallammoserver")
 	Citizen.InvokeNative(0xF25DF915FA38C5F3, PlayerPedId(), 1, 1)
 	Citizen.InvokeNative(0x1B83C0DEEBCBB214, PlayerPedId())
 end)
 
-function RemoveWeaponComponentFromPed(ped, componentHash, weaponHash)
+local function RemoveWeaponComponentFromPed(ped, componentHash, weaponHash)
 	return Citizen.InvokeNative(0x19F70C4D80494FF8, ped, componentHash, weaponHash)
 end
 
-function GiveWeaponComponentToEntity(entity, componentHash, weaponHash, p3)
+local function GiveWeaponComponentToEntity(entity, componentHash, weaponHash, p3)
 	return Citizen.InvokeNative(0x74C9090FDD1BB48E, entity, componentHash, weaponHash, p3)
 end
 
-function shuffle(tbl)
-	for i = #tbl, 2, -1 do
-		local j = math.random(i)
-		tbl[i], tbl[j] = tbl[j], tbl[i]
-	end
-	return tbl
-end
-
-function LoadModel(model)
+local function LoadModel(model)
 	if not IsModelInCdimage(model) then
 		return false
 	end
-
-	RequestModel(model)
-
-	while not HasModelLoaded(model) do
-		Wait(0)
+	if not HasModelLoaded(model) then
+		RequestModel(model, false)
+		while not HasModelLoaded(model) do
+			Wait(0)
+		end
 	end
-
 	return true
 end
 
-function PromptSetUp()
+local function makeEntityFaceEntity(entity)
+	local p2 = GetEntityCoords(entity, true)
+	local p1 = GetEntityCoords(PlayerPedId(), true)
+	local dx = p2.x - p1.x
+	local dy = p2.y - p1.y
+	local heading = GetHeadingFromVector_2d(dx, dy)
+	SetEntityHeading(PlayerPedId(), heading)
+end
+
+local function playanim(anim, msg)
+	local playerPed = PlayerPedId()
+	TaskStartScenarioInPlaceHash(playerPed, GetHashKey(anim), 20000, true, 0, 0, false)
+	progressbar.start(msg, 20000, function()
+	end)
+	Wait(20000)
+	ClearPedTasksImmediately(PlayerPedId())
+end
+local function whenKeyJustPressed(key)
+	if Citizen.InvokeNative(0x580417101DDB492F, 0, key) then
+		return true
+	else
+		return false
+	end
+end
+
+local function PromptSetUp()
 	local str = "Press"
 	OpenStores = PromptRegisterBegin()
 	PromptSetControlAction(OpenStores, Config.keys["G"])
@@ -91,7 +102,7 @@ function PromptSetUp()
 	PromptRegisterEnd(OpenStores)
 end
 
-function PromptSetUp2()
+local function PromptSetUp2()
 	local str = "Store Closed"
 	CloseStores = PromptRegisterBegin()
 	PromptSetControlAction(CloseStores, Config.keys["G"])
@@ -106,36 +117,15 @@ function PromptSetUp2()
 end
 
 RegisterNetEvent("vorp:SelectedCharacter")
-AddEventHandler("vorp:SelectedCharacter", function(charid)
-	TriggerServerEvent("syn_weapons:removeused")
+AddEventHandler("vorp:SelectedCharacter", function()
 	TriggerEvent("syn_weapons:initalizing")
-	Citizen.Wait(1000)
+	Wait(1000)
 	RemoveAllPedWeapons(PlayerPedId(), true, true)
 end)
 
 
-function makeEntityFaceEntity(entity)
-	local p2 = GetEntityCoords(entity, true)
-	local p1 = GetEntityCoords(PlayerPedId(), true)
-	local dx = p2.x - p1.x
-	local dy = p2.y - p1.y
-	local heading = GetHeadingFromVector_2d(dx, dy)
-	SetEntityHeading(PlayerPedId(), heading)
-end
-
-function playanim(anim, msg)
-	local playerPed = PlayerPedId()
-	TaskStartScenarioInPlace(playerPed, GetHashKey(anim), 20000, true, false, false, false)
-	progressbar.start(msg, 20000, function ()
-	end)
-	Citizen.Wait(20000)
-	ClearPedTasksImmediately(PlayerPedId())
-end
-
-RegisterNetEvent("syn_weapons:itemcheckpassed")
-AddEventHandler("syn_weapons:itemcheckpassed", function(item)
+RegisterNetEvent("syn_weapons:itemcheckpassed", function()
 	playanim("WORLD_HUMAN_CROUCH_INSPECT", Config2.Language.craftingloading)
-	TriggerServerEvent("syn_weapons:givebackbox", item)
 	crafting = false
 	craftingammoitem = nil
 	craftingammoitem2 = nil
@@ -145,10 +135,8 @@ AddEventHandler("syn_weapons:itemcheckpassed", function(item)
 	FreezeEntityPosition(PlayerPedId(), false)
 end)
 
-RegisterNetEvent("syn_weapons:itemcheckpassed2")
-AddEventHandler("syn_weapons:itemcheckpassed2", function(item, label)
+RegisterNetEvent("syn_weapons:itemcheckpassed2", function()
 	playanim(Config.craftinganimations, Config2.Language.craftingloading)
-	TriggerServerEvent("syn_weapons:givebackbox2", item, label)
 	crafting = false
 	craftingammoitem = nil
 	craftingammoitem2 = nil
@@ -208,27 +196,16 @@ AddEventHandler("syn_weapons:nomods", function()
 	weaponid = nil
 end)
 
-RegisterNetEvent("syn_weapons:findjob")
-AddEventHandler("syn_weapons:findjob", function(job, rank)
-	playerjob = job
-	playerrank = rank
-end)
 
-AddEventHandler(
-	"onResourceStart",
-	function(resourceName)
-		if resourceName == GetCurrentResourceName() then
-			TriggerServerEvent("syn_weapons:removeused")
-			TriggerEvent("syn_weapons:initalizing")
-			TriggerServerEvent("syn_weapons:cleanup")
-			--RemoveAllPedWeapons(PlayerPedId(),true,true)
-		end
+AddEventHandler("onResourceStart", function(resourceName)
+	if resourceName == GetCurrentResourceName() then
+		TriggerEvent("syn_weapons:initalizing")
 	end
+end
 )
 
-function contains(table, element, element2)
+local function contains(table, element, element2)
 	for k, v in pairs(table) do
-
 		if v.comp == element and v.type == element2 then
 			return true
 		end
@@ -236,9 +213,8 @@ function contains(table, element, element2)
 	return false
 end
 
-function contains2(table, element)
+local function contains2(table, element)
 	for k, v in pairs(table) do
-
 		if v.comp == element then
 			return true
 		end
@@ -246,7 +222,7 @@ function contains2(table, element)
 	return false
 end
 
-function jobcheck(table, element)
+local function jobcheck(table, element)
 	for k, v in pairs(table) do
 		if v == element then
 			return true
@@ -258,7 +234,7 @@ end
 RegisterNetEvent("syn_weapons:initalizing")
 AddEventHandler("syn_weapons:initalizing", function()
 	comps = json.decode(LoadResourceFile(GetCurrentResourceName(), 'wepcomps.json'))
-	Citizen.Wait(2000)
+	Wait(1000)
 	for k, v in pairs(comps) do
 		for x, l in pairs(v) do
 			if l.confirmed == 1 then
@@ -329,7 +305,6 @@ AddEventHandler("syn_weapons:initalizing", function()
 					elseif l.label == "Iron" then
 						l.price = Config.price.iron
 					end
-
 				end
 			end
 		end
@@ -351,7 +326,6 @@ function GetClosestPlayer()
 	for i = 1, #players, 1 do
 		local tgt = GetPlayerPed(players[i])
 		if not usePlayerPed or (usePlayerPed and players[i] ~= playerId) then
-
 			local targetCoords = GetEntityCoords(tgt)
 			local distance = #(coords - targetCoords)
 
@@ -369,7 +343,6 @@ end
 function DrawText3D(x, y, z, text)
 	local onScreen, _x, _y = GetScreenCoordFromWorldCoord(x, y, z)
 	local px, py, pz = table.unpack(GetGameplayCamCoord())
-	local dist = GetDistanceBetweenCoords(px, py, pz, x, y, z, 1)
 	local str = CreateVarString(10, "LITERAL_STRING", text, Citizen.ResultAsLong())
 	if onScreen then
 		SetTextScale(0.30, 0.30)
@@ -378,39 +351,35 @@ function DrawText3D(x, y, z, text)
 		SetTextCentre(1)
 		DisplayText(str, _x, _y)
 		local factor = (string.len(text)) / 225
-		DrawSprite("feeds", "hud_menu_4a", _x, _y + 0.0125, 0.015 + factor, 0.03, 0.1, 35, 35, 35, 190, 0)
+		DrawSprite("feeds", "hud_menu_4a", _x, _y + 0.0125, 0.015 + factor, 0.03, 0.1, 35, 35, 35, 190, false)
 	end
 end
 
-AddEventHandler(
-	"onResourceStop",
-	function(resourceName)
-		if GetCurrentResourceName() == resourceName then
-			FreezeEntityPosition(PlayerPedId(), false)
-			RemoveBlip(blip)
-			if createdobject then
-				DeleteEntity(wepobject)
+AddEventHandler("onResourceStop", function(resourceName)
+	if GetCurrentResourceName() == resourceName then
+		FreezeEntityPosition(PlayerPedId(), false)
+		RemoveBlip(blip)
+		if createdobject then
+			DeleteEntity(wepobject)
+		end
+
+		for storeId, store in pairs(Config3.Stores) do
+			if Config3.Stores[storeId].BlipHandle then
+				RemoveBlip(Config3.Stores[storeId].BlipHandle)
+				Config3.Stores[storeId].BlipHandle = nil
 			end
-
-			for storeId, store in pairs(Config3.Stores) do
-				if Config3.Stores[storeId].BlipHandle then
-
-					RemoveBlip(Config3.Stores[storeId].BlipHandle)
-					Config3.Stores[storeId].BlipHandle = nil
-				end
-				if Config3.Stores[storeId].NPC then
-
-					DeleteEntity(Config3.Stores[storeId].NPC)
-					DeletePed(Config3.Stores[storeId].NPC)
-					SetEntityAsNoLongerNeeded(Config3.Stores[storeId].NPC)
-					Config3.Stores[storeId].NPC = nil
-				end
+			if Config3.Stores[storeId].NPC then
+				DeleteEntity(Config3.Stores[storeId].NPC)
+				DeletePed(Config3.Stores[storeId].NPC)
+				SetEntityAsNoLongerNeeded(Config3.Stores[storeId].NPC)
+				Config3.Stores[storeId].NPC = nil
 			end
 		end
 	end
+end
 )
 
-function drawtext(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
+local function drawtext(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
 	local str = CreateVarString(10, "LITERAL_STRING", str, Citizen.ResultAsLong())
 	SetTextScale(w, h)
 	SetTextColor(math.floor(col1), math.floor(col2), math.floor(col3), math.floor(a))
@@ -422,7 +391,7 @@ function drawtext(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
 	DisplayText(str, x, y)
 end
 
-function createobject(x, y, z, objecthash)
+local function createobject(x, y, z, objecthash)
 	if not createdobject then
 		wepobject = Citizen.InvokeNative(0x9888652B8BA77F73, objecthash, 0, x, y, z, true, 1.0)
 		h = GetEntityHeading(wepobject)
@@ -448,16 +417,17 @@ function createobject(x, y, z, objecthash)
 end
 
 Citizen.CreateThread(function()
+	repeat Wait(1000) until LocalPlayer.state.IsInSession
 	while true do
-		Citizen.Wait(0)
-		local sleep = true
+		local sleep = 1000
 		if createdobject then
-			drawtext(Config2.Language.rotateitem1, 0.25, 0.74, 0.3, 0.2, true, 255, 255, 255, 255, true, 10000)
-			drawtext(Config2.Language.rotateitem2, 0.25, 0.76, 0.3, 0.2, true, 255, 255, 255, 255, true, 10000)
-			drawtext(Config2.Language.rotateitem3, 0.25, 0.78, 0.3, 0.2, true, 255, 255, 255, 255, true, 10000)
-			drawtext(Config2.Language.rotateitem4, 0.25, 0.80, 0.3, 0.2, true, 255, 255, 255, 255, true, 10000)
+			sleep = 0
+			drawtext(Config2.Language.rotateitem1, 0.25, 0.74, 0.3, 0.2, true, 255, 255, 255, 255, true)
+			drawtext(Config2.Language.rotateitem2, 0.25, 0.76, 0.3, 0.2, true, 255, 255, 255, 255, true)
+			drawtext(Config2.Language.rotateitem3, 0.25, 0.78, 0.3, 0.2, true, 255, 255, 255, 255, true)
+			drawtext(Config2.Language.rotateitem4, 0.25, 0.80, 0.3, 0.2, true, 255, 255, 255, 255, true)
 			HasStreamedTextureDictLoaded("menu_textures")
-			DrawSprite("menu_textures", "translate_bg_1a", 0.25, 0.78, 0.14, 0.12, 1.8, 0, 0, 0, 255, 1)
+			DrawSprite("menu_textures", "translate_bg_1a", 0.25, 0.78, 0.14, 0.12, 1.8, 0, 0, 0, 255, true)
 			if whenKeyJustPressed(Config.keys["1"]) then
 				h = h + 10
 				SetEntityRotation(wepobject, roll % 360, 0, h % 360, 1, true)
@@ -474,29 +444,32 @@ Citizen.CreateThread(function()
 				roll = roll + 20
 				SetEntityRotation(wepobject, roll % 360, 0, h % 360, 1, true)
 			end
-
 		end
+		Wait(sleep)
 	end
 end)
 
-Citizen.CreateThread(function()
+CreateThread(function()
+	repeat Wait(1000) until LocalPlayer.state.IsInSession
 	while true do
-		Citizen.Wait(0)
-		if not createdobject and not crafting and not inshop then
-			local coords, letSleep = GetEntityCoords(PlayerPedId()), true
-			for k, v in pairs(Config.customizationLocations) do
-				local dist = GetDistanceBetweenCoords(coords.x, coords.y, coords.z, v.Pos.x, v.Pos.y, v.Pos.z, 1)
-				if dist < 1 then
-					letSleep = false
-					--DrawText3D(v.Pos.x, v.Pos.y, v.Pos.z, Config2.Language.presstobuy)
+		local sleep = 1000
 
+		if not createdobject and not crafting and not inshop then
+			local coords = GetEntityCoords(PlayerPedId())
+
+			for k, v in pairs(Config.customizationLocations) do
+				local dist = GetDistanceBetweenCoords(coords.x, coords.y, coords.z, v.Pos.x, v.Pos.y, v.Pos.z, true)
+
+				if dist < 1 then
+					sleep = 0
 					local Label = CreateVarString(10, 'LITERAL_STRING', Config2.Language.presstobuy)
 					PromptSetActiveGroupThisFrame(OpenGroup, Label)
-					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 
+					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 						if Config.jobonly then
-							TriggerServerEvent("syn_weapons:getjob")
-							Citizen.Wait(400)
+							local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+							local playerjob = result[1]
+							local playerrank = result[2]
 							if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcustomization then
 								local closestPlayer, closestDistance, playerid, tgt1 = GetClosestPlayer()
 								if closestPlayer ~= -1 and closestDistance <= 2.0 then
@@ -544,8 +517,6 @@ Citizen.CreateThread(function()
 											TriggerEvent("syn_weapons:wepcomp")
 											Citizen.Wait(1000)
 											WarMenu.OpenMenu('wepcomp')
-											--TriggerEvent("vorp:TipBottom", Config2.Language.scrolltoexit, 4000)
-											--FreezeEntityPosition(PlayerPedId(),true)
 											createobject(v.Pos2.x, v.Pos2.y, v.Pos2.z, globalhash)
 										else
 											TriggerEvent("vorp:TipBottom", Config2.Language.pleaserequip, 4000)
@@ -555,202 +526,68 @@ Citizen.CreateThread(function()
 							end
 						end
 					end
-
 				end
-
-			end
-			if letSleep then
-				Citizen.Wait(500)
 			end
 		end
+		Wait(sleep)
 	end
 end)
 
-Citizen.CreateThread(function()
+CreateThread(function()
+	repeat Wait(1000) until LocalPlayer.state.IsInSession
 	while true do
-		Citizen.Wait(0)
+		local letSleep = 1000
+
 		if not crafting and not createdobject and not inshop then
-			local coords, letSleep = GetEntityCoords(PlayerPedId()), true
+			local coords = GetEntityCoords(PlayerPedId())
 
 			for k, v in pairs(Config.craftinglocation) do
-			
-				local dist = GetDistanceBetweenCoords(coords.x, coords.y, coords.z, v.Pos.x, v.Pos.y, v.Pos.z, 1)
+				local dist = GetDistanceBetweenCoords(coords.x, coords.y, coords.z, v.Pos.x, v.Pos.y, v.Pos.z, false)
 				if dist < 1 then
-					letSleep    = false
-					--	DrawText3D(v.Pos.x, v.Pos.y, v.Pos.z, Config2.Language.presstocraft)
+					letSleep    = 0
 					local Label = CreateVarString(10, 'LITERAL_STRING', Config2.Language.presstocraft)
 					PromptSetActiveGroupThisFrame(OpenGroup, Label)
-					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 
+					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 						if Config.jobonly then
-							TriggerServerEvent("syn_weapons:getjob")
-							Citizen.Wait(400)
+							local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+							local playerjob = result[1]
+							local playerrank = result[2]
 							if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcrafting then
 								crafting = true
 								WarMenu.OpenMenu('crafting')
-								--TriggerEvent("vorp:TipBottom", Config2.Language.scrolltoexit, 4000)
-								--FreezeEntityPosition(PlayerPedId(),true)
 							else
-								TriggerEvent("vorp:TipBottom", Config2.Language.wrongjobcrafting, 4000)
+								Core.NotifyObjective(Config2.Language.wrongjobcrafting, 5000)
 							end
 						else
-							TriggerServerEvent("syn_weapons:getjob")
-							Citizen.Wait(400)
 							crafting = true
 							WarMenu.OpenMenu('crafting')
-							--TriggerEvent("vorp:TipBottom", Config2.Language.scrolltoexit, 4000)
-							--FreezeEntityPosition(PlayerPedId(),true)
-						end
-					end
-				end
-
-			end
-			if letSleep then
-				Citizen.Wait(500)
-			end
-		end
-	end
-end)
-
-Citizen.CreateThread(function()
-	if Config.weaponshops then
-		PromptSetUp()
-		PromptSetUp2()
-		while true do
-			Citizen.Wait(0)
-			local player = PlayerPedId()
-			local coords = GetEntityCoords(player)
-			local sleep = true
-			local dead = IsEntityDead(player)
-			local hour = GetClockHours()
-           
-			if not inshop and not dead then
-           
-				for storeId, storeConfig in pairs(Config3.Stores) do
-					
-					if storeConfig.StoreHoursAllowed then
-						
-						if hour >= storeConfig.StoreClose or hour < storeConfig.StoreOpen then
-
-							if Config3.Stores[storeId].BlipHandle then
-
-								RemoveBlip(Config3.Stores[storeId].BlipHandle)
-								Config3.Stores[storeId].BlipHandle = nil
-							end
-							if Config3.Stores[storeId].NPC then
-
-								DeleteEntity(Config3.Stores[storeId].NPC)
-								DeletePed(Config3.Stores[storeId].NPC)
-								SetEntityAsNoLongerNeeded(Config3.Stores[storeId].NPC)
-								Config3.Stores[storeId].NPC = nil
-							end
-							local coordsDist = vector3(coords.x, coords.y, coords.z)
-							local coordsStore = vector3(storeConfig.Pos.x, storeConfig.Pos.y, storeConfig.Pos.z)
-							local distance = #(coordsDist - coordsStore)
-
-							if (distance <= 3.0) then -- check distance
-                                
-								sleep = false
-								local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
-								PromptSetActiveGroupThisFrame(CloseGroup, Label)
-								local label2 = CreateVarString(10, 'LITERAL_STRING',
-									Config2.Language.closed ..
-									storeConfig.StoreOpen .. Config2.Language.am .. storeConfig.StoreClose .. Config2.Language.pm)
-								PromptSetActiveGroupThisFrame(CloseGroup, label2)
-
-								if Citizen.InvokeNative(0xC92AC953F0A982AE, CloseStores) then
-									Wait(100)
-									TriggerEvent("vorp:TipRight",
-										Config2.Language.closed ..
-										storeConfig.StoreOpen .. Config2.Language.am .. storeConfig.StoreClose .. Config2.Language.pm, 3000)
-								end
-
-							end
-						elseif hour >= storeConfig.StoreOpen then
-							--print(7)
-							if not Config3.Stores[storeId].BlipHandle and storeConfig.showblip then
-								--	print(8)
-								AddBlip(storeId)
-							end
-							if not Config3.Stores[storeId].NPC and storeConfig.SpawnNPC then
-								--	print(10)
-								SpawnNPC(storeId)
-							end
-							local coordsDist = vector3(coords.x, coords.y, coords.z)
-							local coordsStore = vector3(storeConfig.Pos.x, storeConfig.Pos.y, storeConfig.Pos.z)
-							local distance = #(coordsDist - coordsStore)
-
-							if (distance <= 3.0) then -- check distance
-								
-								sleep = false
-								local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
-								PromptSetActiveGroupThisFrame(OpenGroup, Label)
-
-								if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then -- iff all pass open menu
-									currentshop = storeId
-									inshop = true
-									WarMenu.OpenMenu('shop')
-									TaskStandStill(player, -1)
-								end
-							end
-						end
-					else
-
-						if not Config3.Stores[storeId].BlipHandle and storeConfig.showblip then
-
-							AddBlip(storeId)
-						end
-						if not Config3.Stores[storeId].NPC and storeConfig.SpawnNPC then
-
-							SpawnNPC(storeId)
-						end
-						-- ## run this before distance check  no need to run a code that is no meant for the client ## --
-						local coordsDist = vector3(coords.x, coords.y, coords.z)
-						local coordsStore = vector3(storeConfig.Pos.x, storeConfig.Pos.y, storeConfig.Pos.z)
-						local distance = #(coordsDist - coordsStore)
-
-						if (distance <= 3.0) then -- check distance
-
-							sleep = false
-							local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
-							PromptSetActiveGroupThisFrame(OpenGroup, Label)
-
-							if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then -- iff all pass open menu
-								currentshop = storeId
-								inshop = true
-								WarMenu.OpenMenu('shop')
-								TaskStandStill(player, -1)
-							end
 						end
 					end
 				end
 			end
-			if sleep then
-				Citizen.Wait(1000)
-			end
 		end
+		Wait(letSleep)
 	end
 end)
 
-function AddBlip(Store)
-
+local function AddBlip(Store)
 	if Config3.Stores[Store].showblip then
-
 		Config3.Stores[Store].BlipHandle = N_0x554d9d53f696d002(1664425300, Config3.Stores[Store].Pos.x,
 			Config3.Stores[Store].Pos.y, Config3.Stores[Store].Pos.z)
-		SetBlipSprite(Config3.Stores[Store].BlipHandle, Config3.Stores[Store].blipsprite, 1)
+		SetBlipSprite(Config3.Stores[Store].BlipHandle, Config3.Stores[Store].blipsprite, true)
 		SetBlipScale(Config3.Stores[Store].BlipHandle, 0.2)
 		Citizen.InvokeNative(0x9CB1A1623062F402, Config3.Stores[Store].BlipHandle, Config3.Stores[Store].BlipName)
 	end
 end
 
-function SpawnNPC(Store)
-
+local function SpawnNPC(Store)
 	local v = Config3.Stores[Store]
 	if v.SpawnNPC then
 		LoadModel(v.NpcModel)
 		local npc = CreatePed(v.NpcModel, v.Pos.x, v.Pos.y, v.Pos.z, 0.0, false, true, true, true)
 		Citizen.InvokeNative(0x283978A15512B2FE, npc, true)
+		PlaceEntityOnGroundProperly(npc, false)
 		SetEntityCanBeDamaged(npc, false)
 		SetEntityInvincible(npc, true)
 		Wait(500)
@@ -759,6 +596,139 @@ function SpawnNPC(Store)
 		Config3.Stores[Store].NPC = npc
 	end
 end
+
+CreateThread(function()
+	if not Config.weaponshops then
+		return
+	end
+
+	repeat Wait(1000) until LocalPlayer.state.IsInSession
+
+	PromptSetUp()
+	PromptSetUp2()
+	while true do
+		local player = PlayerPedId()
+		local coords = GetEntityCoords(player)
+		local dead = IsEntityDead(player)
+		local hour = GetClockHours()
+		local sleep = 1000
+
+		if not inshop and not dead then
+			for storeId, storeConfig in pairs(Config3.Stores) do
+				if storeConfig.StoreHoursAllowed then
+					if hour >= storeConfig.StoreClose or hour < storeConfig.StoreOpen then
+						if Config3.Stores[storeId].BlipHandle then
+							RemoveBlip(Config3.Stores[storeId].BlipHandle)
+							Config3.Stores[storeId].BlipHandle = nil
+						end
+
+						if Config3.Stores[storeId].NPC then
+							DeleteEntity(Config3.Stores[storeId].NPC)
+							DeletePed(Config3.Stores[storeId].NPC)
+							SetEntityAsNoLongerNeeded(Config3.Stores[storeId].NPC)
+							Config3.Stores[storeId].NPC = nil
+						end
+
+						local coordsDist = vector3(coords.x, coords.y, coords.z)
+						local coordsStore = vector3(storeConfig.Pos.x, storeConfig.Pos.y, storeConfig.Pos.z)
+						local distance = #(coordsDist - coordsStore)
+
+						if (distance <= 3.0) then -- check distance
+							sleep = 0
+							local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
+							PromptSetActiveGroupThisFrame(CloseGroup, Label)
+							local label2 = CreateVarString(10, 'LITERAL_STRING',
+								Config2.Language.closed .. storeConfig.StoreOpen ..
+								Config2.Language.am .. storeConfig.StoreClose .. Config2.Language.pm)
+							PromptSetActiveGroupThisFrame(CloseGroup, label2)
+
+							if Citizen.InvokeNative(0xC92AC953F0A982AE, CloseStores) then
+								TriggerEvent("vorp:TipRight",
+									Config2.Language.closed ..
+									storeConfig.StoreOpen ..
+									Config2.Language.am .. storeConfig.StoreClose .. Config2.Language.pm, 3000)
+							end
+						end
+					elseif hour >= storeConfig.StoreOpen then
+						if not Config3.Stores[storeId].BlipHandle and storeConfig.showblip then
+							AddBlip(storeId)
+						end
+
+						local coordsDist = vector3(coords.x, coords.y, coords.z)
+						local coordsStore = vector3(storeConfig.Pos.x, storeConfig.Pos.y, storeConfig.Pos.z)
+						local distance = #(coordsDist - coordsStore)
+
+						if distance <= 50 then
+							if not Config3.Stores[storeId].NPC and storeConfig.SpawnNPC then
+								SpawnNPC(storeId)
+							end
+						else
+							if Config3.Stores[storeId].NPC then
+								DeleteEntity(Config3.Stores[storeId].NPC)
+								DeletePed(Config3.Stores[storeId].NPC)
+								SetEntityAsNoLongerNeeded(Config3.Stores[storeId].NPC)
+								Config3.Stores[storeId].NPC = nil
+							end
+						end
+
+						if (distance <= 3.0) then -- check distance
+							sleep = 0
+							local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
+							PromptSetActiveGroupThisFrame(OpenGroup, Label)
+
+							if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
+								currentshop = storeId
+								inshop = true
+								WarMenu.OpenMenu('shop')
+								TaskStandStill(player, -1)
+							end
+						end
+					end
+				else
+					if not Config3.Stores[storeId].BlipHandle and storeConfig.showblip then
+						AddBlip(storeId)
+					end
+					if not Config3.Stores[storeId].NPC and storeConfig.SpawnNPC then
+						SpawnNPC(storeId)
+					end
+					-- ## run this before distance check  no need to run a code that is no meant for the client ## --
+					local coordsDist = vector3(coords.x, coords.y, coords.z)
+					local coordsStore = vector3(storeConfig.Pos.x, storeConfig.Pos.y, storeConfig.Pos.z)
+					local distance = #(coordsDist - coordsStore)
+
+					if distance <= 50 then
+						if not Config3.Stores[storeId].NPC and storeConfig.SpawnNPC then
+							SpawnNPC(storeId)
+						end
+					else
+						if Config3.Stores[storeId].NPC then
+							DeleteEntity(Config3.Stores[storeId].NPC)
+							DeletePed(Config3.Stores[storeId].NPC)
+							SetEntityAsNoLongerNeeded(Config3.Stores[storeId].NPC)
+							Config3.Stores[storeId].NPC = nil
+						end
+					end
+
+					if (distance <= 3.0) then -- check distance
+						sleep = 0
+						local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
+						PromptSetActiveGroupThisFrame(OpenGroup, Label)
+
+						if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then -- iff all pass open menu
+							currentshop = storeId
+							inshop = true
+							WarMenu.OpenMenu('shop')
+							TaskStandStill(player, -1)
+						end
+					end
+				end
+			end
+		end
+		Wait(sleep)
+	end
+end)
+
+
 
 RegisterNetEvent("syn_weapons:wepcomp")
 AddEventHandler("syn_weapons:wepcomp", function()
@@ -785,7 +755,8 @@ AddEventHandler("syn_weapons:wepcomp", function()
 	end
 end)
 
-Citizen.CreateThread(function()
+CreateThread(function()
+	repeat Wait(1000) until LocalPlayer.state.IsInSession
 	WarMenu.CreateMenu('wepcomp', Config2.Language.customization)
 	WarMenu.CreateMenu('crafting', Config2.Language.crafting)
 	WarMenu.CreateMenu('shop', Config2.Language.shop)
@@ -840,7 +811,6 @@ Citizen.CreateThread(function()
 			if WarMenu.Button(Config2.Language.total .. sum .. Config2.Language.dollar) then end
 			if WarMenu.MenuButton(Config2.Language.buyselect, "confirmbuy") then end
 			if WarMenu.MenuButton(Config2.Language.exitmenu, "confirmexit") then end
-
 		elseif WarMenu.IsMenuOpened('shop') then
 			if WarMenu.MenuButton(Config2.Language.buyweapons, "weaponz") then end
 			if WarMenu.MenuButton(Config2.Language.buyammo, "ammoz") then end
@@ -880,18 +850,20 @@ Citizen.CreateThread(function()
 									FreezeEntityPosition(PlayerPedId(), false)
 									inshop = false
 									WarMenu.CloseMenu()
-									TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language.amount, function(cb)
-										local count = tonumber(cb)
-                                                                                 count = math.floor(count) -- prevent decimals
-										if count ~= nil and count ~= 0 and count > 0 then
-											itemlabel = j
-											itemprice = d.price
-											itemtobuy = d.item
-											TriggerServerEvent("syn_weapons:buyammo", itemtobuy, itemprice, count, itemlabel)
-										else
-											TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
-										end
-									end)
+									TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language
+										.amount, function(cb)
+											local count = tonumber(cb)
+											count = math.floor(count) -- prevent decimals
+											if count ~= nil and count ~= 0 and count > 0 then
+												itemlabel = j
+												itemprice = d.price
+												itemtobuy = d.item
+												TriggerServerEvent("syn_weapons:buyammo", itemtobuy, itemprice, count,
+													itemlabel)
+											else
+												TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
+											end
+										end)
 								end
 							end
 						end
@@ -905,16 +877,16 @@ Citizen.CreateThread(function()
 						if category == l then
 							for weapon, weaponData in pairs(m) do
 								if Config.syndual then
-									if WarMenu.MenuButton("" .. weapon .. " / " .. Config2.Language.cost .. Config2.Language.dollar ..
-										weaponData.price, "shop") then
+									if WarMenu.MenuButton("" .. weapon .. " / " .. Config2.Language.cost .. Config2.Language.dollar .. weaponData.price, "shop") then
 										itemprice = weaponData.price
 										itemlabel = weapon
 										itemtobuy = weaponData.hashname
+										print(itemtobuy, itemprice, itemlabel)
 										TriggerServerEvent("syn_weapons:buyweapon", itemtobuy, itemprice, itemlabel)
 									end
 								else
 									if WarMenu.MenuButton("" .. weapon .. " / " .. Config2.Language.cost .. weaponData.price ..
-										Config2.Language.dollar, "shop") then
+											Config2.Language.dollar, "shop") then
 										itemlabel = weapon
 										itemprice = weaponData.price
 										itemtobuy = weaponData.hashname
@@ -938,7 +910,6 @@ Citizen.CreateThread(function()
 			end
 		elseif WarMenu.IsMenuOpened('wepcraft3') then
 			if WarMenu.Button(Config2.Language.craft) then
-
 				TriggerServerEvent("syn_weapons:itemscheck2", craftingammoitem2, itemtosend, materialtosend, craftcost)
 				WarMenu.CloseMenu()
 			end
@@ -957,6 +928,8 @@ Citizen.CreateThread(function()
 				end
 			end
 		elseif WarMenu.IsMenuOpened('wepcraft2') then
+			local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+			local playerjob = result[1]
 			for k, v in pairs(Config4.weapons) do
 				if k == craftingammoitem then
 					for l, m in pairs(v) do
@@ -1010,6 +983,8 @@ Citizen.CreateThread(function()
 				end
 			end
 		elseif WarMenu.IsMenuOpened('ammocraft2') then
+			local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+			local playerjob = result[1]
 			for k, v in pairs(Config5.ammo) do
 				if k == craftingammoitem then
 					for l, m in pairs(v) do
@@ -1037,7 +1012,6 @@ Citizen.CreateThread(function()
 					end
 				end
 			end
-
 		elseif WarMenu.IsMenuOpened('confirmexit2') then
 			if WarMenu.Button(Config2.Language.yes) then
 				crafting = false
@@ -1050,7 +1024,6 @@ Citizen.CreateThread(function()
 				WarMenu.CloseMenu()
 			end
 			if WarMenu.MenuButton(Config2.Language.no, "crafting") then end
-
 		elseif WarMenu.IsMenuOpened('confirmbuy') then
 			if WarMenu.Button(Config2.Language.yes) then
 				TriggerServerEvent("syn_weapons:checkmoney", sum)
@@ -1113,7 +1086,6 @@ Citizen.CreateThread(function()
 			if contains(added, "comp", "wrap") then
 				if WarMenu.MenuButton(Config2.Language.wrapcolor, "wrapcolor") then end
 			end
-
 		elseif WarMenu.IsMenuOpened('decal') then
 			if contains(compss, "decal", "cylinder") then
 				if WarMenu.MenuButton(Config2.Language.decalcylinder, "decalcylinder") then end
@@ -1124,7 +1096,6 @@ Citizen.CreateThread(function()
 			if contains(compss, "decal", "barrel") then
 				if WarMenu.MenuButton(Config2.Language.decalbarrel, "decalbarrel") then end
 			end
-
 		elseif WarMenu.IsMenuOpened('decalcolor') then
 			if contains(compss, "decalcolor", "cylinder") and contains(added, "decal", "cylinder") then
 				if WarMenu.MenuButton(Config2.Language.cylinder2, "cylinder2") then end
@@ -1135,7 +1106,6 @@ Citizen.CreateThread(function()
 			if contains(compss, "decalcolor", "barrel") and contains(added, "decal", "barrel") then
 				if WarMenu.MenuButton(Config2.Language.barrel2, "barrel2") then end -- findme
 			end
-
 		elseif WarMenu.IsMenuOpened('comp') then
 			if contains(compss, "comp", "scope") then
 				if WarMenu.MenuButton(Config2.Language.sights, "scope") then end
@@ -1149,7 +1119,6 @@ Citizen.CreateThread(function()
 			if contains(compss, "comp", "wrap") then
 				if WarMenu.MenuButton(Config2.Language.wrap, "wrap") then end
 			end
-
 		elseif WarMenu.IsMenuOpened('other') then
 			if WarMenu.Button(Config2.Language.remove) then
 				cal = true
@@ -1170,7 +1139,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "comp" then
 						if compss[i].type == "other" then
 							if WarMenu.MenuButton(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1216,11 +1185,9 @@ Citizen.CreateThread(function()
 									})
 								end
 								for k, v in pairs(compss) do
-
 									if v.comp == compss[i].comp and v.type == compss[i].type then
 										RemoveWeaponComponentFromWeaponObject(wepobject, v.name)
 									end
-
 								end
 								cal = true
 								if compss[i].model ~= 0 then
@@ -1234,7 +1201,6 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
@@ -1261,7 +1227,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "comp" then
 						if compss[i].type == "wrap" then
 							if WarMenu.MenuButton(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1297,7 +1263,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1306,14 +1271,11 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
-
 									if v.comp == compss[i].comp and v.type == compss[i].type then
 										RemoveWeaponComponentFromWeaponObject(wepobject, v.name)
 									end
-
 								end
 								cal = true
 								if compss[i].model ~= 0 then
@@ -1327,7 +1289,6 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
@@ -1354,7 +1315,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "comp" then
 						if compss[i].type == "scope" then
 							if WarMenu.MenuButton(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1381,7 +1342,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -1391,7 +1351,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1402,11 +1361,9 @@ Citizen.CreateThread(function()
 									})
 								end
 								for k, v in pairs(compss) do
-
 									if v.comp == compss[i].comp and v.type == compss[i].type then
 										RemoveWeaponComponentFromWeaponObject(wepobject, v.name)
 									end
-
 								end
 								cal = true
 								if compss[i].model ~= 0 then
@@ -1420,7 +1377,6 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
@@ -1447,7 +1403,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "comp" then
 						if compss[i].type == "rifling" then
 							if WarMenu.MenuButton(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar, "comp") then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1474,7 +1430,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -1484,7 +1439,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1493,14 +1447,11 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
-
 									if v.comp == compss[i].comp and v.type == compss[i].type then
 										RemoveWeaponComponentFromWeaponObject(wepobject, v.name)
 									end
-
 								end
 								cal = true
 								if compss[i].model ~= 0 then
@@ -1514,14 +1465,12 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
 					end
 				end
 			end
-
 		elseif WarMenu.IsMenuOpened('barrel2') then
 			if WarMenu.Button(Config2.Language.remove) then
 				cal = true -- findme
@@ -1542,7 +1491,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "decalcolor" then
 						if compss[i].type == "barrel" then
 							if WarMenu.Button(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1569,7 +1518,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -1579,7 +1527,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1588,7 +1535,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
 									if v.comp ~= "comp" then
@@ -1609,14 +1555,12 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
 					end
 				end
 			end
-
 		elseif WarMenu.IsMenuOpened('frame2') then
 			if WarMenu.Button(Config2.Language.remove) then
 				cal = true
@@ -1638,7 +1582,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "decalcolor" then
 						if compss[i].type == "frame" then
 							if WarMenu.Button(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1665,7 +1609,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -1675,7 +1618,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1684,7 +1626,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
 									if v.comp ~= "comp" then
@@ -1705,14 +1646,12 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
 					end
 				end
 			end
-
 		elseif WarMenu.IsMenuOpened('cylinder2') then
 			if WarMenu.Button(Config2.Language.remove) then
 				cal = true
@@ -1734,7 +1673,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "decalcolor" then
 						if compss[i].type == "cylinder" then
 							if WarMenu.Button(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1761,7 +1700,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -1771,7 +1709,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1780,7 +1717,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
 									if v.comp ~= "comp" then
@@ -1800,14 +1736,12 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
 					end
 				end
 			end
-
 		elseif WarMenu.IsMenuOpened('decalbarrel') then
 			if WarMenu.Button(Config2.Language.remove) then
 				cal = true
@@ -1829,7 +1763,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "decal" then
 						if compss[i].type == "barrel" then
 							if WarMenu.Button(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1856,7 +1790,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -1866,7 +1799,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1875,7 +1807,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
 									if v.comp ~= "comp" then
@@ -1895,7 +1826,6 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
@@ -1923,7 +1853,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "decal" then
 						if compss[i].type == "frame" then
 							if WarMenu.Button(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -1950,7 +1880,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -1960,7 +1889,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -1969,7 +1897,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
 									if v.comp ~= "comp" then
@@ -1989,14 +1916,12 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
 					end
 				end
 			end
-
 		elseif WarMenu.IsMenuOpened('decalcylinder') then
 			if WarMenu.Button(Config2.Language.remove) then
 				cal = true
@@ -2017,7 +1942,7 @@ Citizen.CreateThread(function()
 					if compss[i].comp == "decal" then
 						if compss[i].type == "cylinder" then
 							if WarMenu.Button(Config2.Language.label ..
-								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+									compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 								if next(pricing) ~= nil then
 									for k, v in pairs(pricing) do
 										if v.name == compss[i].name or
@@ -2044,7 +1969,6 @@ Citizen.CreateThread(function()
 										if v.name == compss[i].name or
 											(v.name ~= compss[i].name and v.comp == compss[i].comp and v.type == compss[i].type) then
 											table.remove(added, k)
-
 										end
 									end
 									table.insert(added, {
@@ -2054,7 +1978,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								else
 									table.insert(added, {
 										label = compss[i].label,
@@ -2063,7 +1986,6 @@ Citizen.CreateThread(function()
 										type = compss[i].type,
 										name = compss[i].name
 									})
-
 								end
 								for k, v in pairs(compss) do
 									if v.comp ~= "comp" then
@@ -2083,14 +2005,12 @@ Citizen.CreateThread(function()
 								if modelz then
 									SetModelAsNoLongerNeeded(compss[i].model)
 									modelz = false
-
 								end
 							end
 						end
 					end
 				end
 			end
-
 		elseif WarMenu.IsMenuOpened('grip') then
 			if WarMenu.Button(Config2.Language.remove) then
 				cal = true
@@ -2111,7 +2031,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "grip" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2136,7 +2056,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2146,7 +2065,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2155,7 +2073,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2175,7 +2092,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2200,7 +2116,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "scope" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2225,7 +2141,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2235,7 +2150,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2244,7 +2158,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2264,7 +2177,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2289,7 +2201,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "wrapcolor" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2314,7 +2226,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2324,7 +2235,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2333,7 +2243,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2353,7 +2262,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2364,7 +2272,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "gripbody" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2389,7 +2297,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2426,7 +2333,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2452,7 +2358,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "cylinder" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2477,7 +2383,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2487,7 +2392,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2496,7 +2400,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2516,7 +2419,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2542,7 +2444,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "frontsight" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2567,7 +2469,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2577,7 +2478,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2586,7 +2486,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2606,7 +2505,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2632,7 +2530,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "frame" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2657,7 +2555,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2667,7 +2564,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2676,7 +2572,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2696,7 +2591,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2721,7 +2615,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "trigger" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2746,7 +2640,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2756,7 +2649,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2765,7 +2657,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2785,7 +2676,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2811,7 +2701,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "variant" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2836,7 +2726,6 @@ Citizen.CreateThread(function()
 								for k, v in pairs(added) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
 										table.remove(added, k)
-
 									end
 								end
 								table.insert(added, {
@@ -2846,7 +2735,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2855,7 +2743,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2875,7 +2762,6 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
@@ -2900,7 +2786,7 @@ Citizen.CreateThread(function()
 				if compss[i].confirmed == 1 then
 					if compss[i].comp == "barrel" then
 						if WarMenu.Button(Config2.Language.label ..
-							compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
+								compss[i].label .. Config2.Language.price .. compss[i].price .. Config2.Language.dollar) then
 							if next(pricing) ~= nil then
 								for k, v in pairs(pricing) do
 									if v.name ~= compss[i].name and v.comp == compss[i].comp then
@@ -2934,7 +2820,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							else
 								table.insert(added, {
 									label = compss[i].label,
@@ -2943,7 +2828,6 @@ Citizen.CreateThread(function()
 									type = compss[i].type,
 									name = compss[i].name
 								})
-
 							end
 							for k, v in pairs(compss) do
 								if v.comp ~= "comp" then
@@ -2963,20 +2847,19 @@ Citizen.CreateThread(function()
 							if modelz then
 								SetModelAsNoLongerNeeded(compss[i].model)
 								modelz = false
-
 							end
 						end
 					end
 				end
 			end
 		end
+
 		WarMenu.Display()
-		Citizen.Wait(0)
+		Wait(0)
 	end
 end)
 
-RegisterNetEvent("syn_weapons:givecomp")
-AddEventHandler("syn_weapons:givecomp", function(components, id, hash)
+RegisterNetEvent("syn_weapons:givecomp", function(components, id, hash)
 	globalhash = hash
 	weaponid = id
 	added = components
@@ -2987,7 +2870,7 @@ AddEventHandler("syn_weapons:givecomp", function(components, id, hash)
 	for k, v in pairs(compss) do
 		RemoveWeaponComponentFromPed(PlayerPedId(), v.name, globalhash)
 	end
-	Citizen.Wait(500)
+	Wait(500)
 	for i = 1, #components do
 		if components[i].model ~= 0 then
 			LoadModel(components[i].model)
@@ -2997,35 +2880,4 @@ AddEventHandler("syn_weapons:givecomp", function(components, id, hash)
 			SetModelAsNoLongerNeeded(components[i].model)
 		end
 	end
-end)
-
-
-
-function whenKeyJustPressed(key)
-
-	if Citizen.InvokeNative(0x580417101DDB492F, 0, key) then
-		return true
-	else
-		return false
-	end
-end
-
-RegisterNetEvent("syn_weapons:getgun")
-AddEventHandler("syn_weapons:getgun", function(key, guncheck, qt, item, guncheck2, playeritem)
-	local wephash = Citizen.InvokeNative(0x8425C5F057012DAB, PlayerPedId())
-	local weaponName = tostring(Citizen.InvokeNative(0x89CF5FF3D363311E, wephash))
-	local currentammo = GetPedAmmoByType(PlayerPedId(), GetHashKey(key))
-	if (guncheck2 ~= 0 and Citizen.InvokeNative(guncheck2, wephash)) or Citizen.InvokeNative(guncheck, wephash) or
-		guncheck == 0 then
-		TriggerServerEvent("syn_weapons:addammo", wephash, qt, key, playeritem, item)
-
-	else
-		TriggerEvent("vorp:TipBottom", Config2.Language.wrongwptype, 4000)
-		TriggerServerEvent("syn_weapons:givebackbox", item)
-	end
-end)
-
-RegisterNetEvent("syn_weapons:givebackbox")
-AddEventHandler("syn_weapons:givebackbox", function(item)
-	TriggerServerEvent("syn_weapons:givebackbox", item)
 end)
