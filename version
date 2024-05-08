@@ -1,3 +1,8 @@
+<2.2>
+- fix for several exploits
+- clean up code
+- use of the new inventory exports and vorp core
+- removed un used code and duplicated code some of it inventory was already doing it.
 <2.1>
 - Fix Issues with config
 - added store hours
