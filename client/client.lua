@@ -32,7 +32,7 @@ local blip
 local OpenGroup = GetRandomIntInRange(0, 0xffffff)
 local CloseGroup = GetRandomIntInRange(0, 0xffffff)
 
---local progressbar = exports.vorp_progressbar:initiate()
+local progressbar = exports.vorp_progressbar:initiate()
 local Core = exports.vorp_core:GetCore()
 
 RegisterNetEvent("vorp_weapons:removeallammo") -- new event
