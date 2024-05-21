@@ -31,7 +31,6 @@ local itemtobuy
 local blip
 local OpenGroup = GetRandomIntInRange(0, 0xffffff)
 local CloseGroup = GetRandomIntInRange(0, 0xffffff)
-
 local progressbar = exports.vorp_progressbar:initiate()
 local Core = exports.vorp_core:GetCore()
 
@@ -757,6 +756,7 @@ end)
 
 CreateThread(function()
 	repeat Wait(1000) until LocalPlayer.state.IsInSession
+
 	WarMenu.CreateMenu('wepcomp', Config2.Language.customization)
 	WarMenu.CreateMenu('crafting', Config2.Language.crafting)
 	WarMenu.CreateMenu('shop', Config2.Language.shop)
@@ -797,7 +797,7 @@ CreateThread(function()
 	WarMenu.CreateSubMenu('barrel2', 'wepcomp', Config2.Language.barrel2)
 	WarMenu.CreateSubMenu('confirmexit', 'wepcomp', Config2.Language.areusureexit)
 	WarMenu.CreateSubMenu('confirmbuy', 'wepcomp', Config2.Language.buyselect)
-
+	local GetJob = false
 	while true do
 		if WarMenu.IsMenuOpened('wepcomp') then
 			if cal == true then
@@ -807,10 +807,10 @@ CreateThread(function()
 				end
 				cal = false
 			end
-			if WarMenu.MenuButton(Config2.Language.customization, "confirmed") then end
-			if WarMenu.Button(Config2.Language.total .. sum .. Config2.Language.dollar) then end
-			if WarMenu.MenuButton(Config2.Language.buyselect, "confirmbuy") then end
-			if WarMenu.MenuButton(Config2.Language.exitmenu, "confirmexit") then end
+			WarMenu.MenuButton(Config2.Language.customization, "confirmed")
+			WarMenu.Button(Config2.Language.total .. sum .. Config2.Language.dollar)
+			WarMenu.MenuButton(Config2.Language.buyselect, "confirmbuy")
+			WarMenu.MenuButton(Config2.Language.exitmenu, "confirmexit")
 		elseif WarMenu.IsMenuOpened('shop') then
 			if WarMenu.MenuButton(Config2.Language.buyweapons, "weaponz") then end
 			if WarMenu.MenuButton(Config2.Language.buyammo, "ammoz") then end
@@ -819,6 +819,7 @@ CreateThread(function()
 				inshop = false
 				currentshop = nil
 				WarMenu.CloseMenu()
+				GetJob = false
 			end
 		elseif WarMenu.IsMenuOpened('weaponz') then
 			for k, v in pairs(Config3.Stores) do
@@ -850,20 +851,20 @@ CreateThread(function()
 									FreezeEntityPosition(PlayerPedId(), false)
 									inshop = false
 									WarMenu.CloseMenu()
-									TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language
-										.amount, function(cb)
-											local count = tonumber(cb)
-											count = math.floor(count) -- prevent decimals
-											if count ~= nil and count ~= 0 and count > 0 then
-												itemlabel = j
-												itemprice = d.price
-												itemtobuy = d.item
-												TriggerServerEvent("syn_weapons:buyammo", itemtobuy, itemprice, count,
-													itemlabel)
-											else
-												TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
-											end
-										end)
+									GetJob = false
+									TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language.amount, function(cb)
+										local count = tonumber(cb)
+										count = math.floor(count) -- prevent decimals
+										if count ~= nil and count ~= 0 and count > 0 then
+											itemlabel = j
+											itemprice = d.price
+											itemtobuy = d.item
+											TriggerServerEvent("syn_weapons:buyammo", itemtobuy, itemprice, count,
+												itemlabel)
+										else
+											TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
+										end
+									end)
 								end
 							end
 						end
@@ -899,9 +900,9 @@ CreateThread(function()
 				end
 			end
 		elseif WarMenu.IsMenuOpened('crafting') then
-			if WarMenu.MenuButton(Config2.Language.weaponcrafting, "wepcraft") then end
-			if WarMenu.MenuButton(Config2.Language.ammocrafting, "ammocraft") then end
-			if WarMenu.MenuButton(Config2.Language.exitmenu, "confirmexit2") then end
+			WarMenu.MenuButton(Config2.Language.weaponcrafting, "wepcraft")
+			WarMenu.MenuButton(Config2.Language.ammocrafting, "ammocraft")
+			WarMenu.MenuButton(Config2.Language.exitmenu, "confirmexit2")
 		elseif WarMenu.IsMenuOpened('wepcraft') then
 			for k, v in pairs(Config4.weapons) do
 				if WarMenu.MenuButton("" .. k .. "", "wepcraft2") then
@@ -912,6 +913,7 @@ CreateThread(function()
 			if WarMenu.Button(Config2.Language.craft) then
 				TriggerServerEvent("syn_weapons:itemscheck2", craftingammoitem2, itemtosend, materialtosend, craftcost)
 				WarMenu.CloseMenu()
+				GetJob = false
 			end
 			for k, v in pairs(Config4.weapons) do
 				if k == craftingammoitem then
@@ -967,6 +969,7 @@ CreateThread(function()
 			if WarMenu.Button(Config2.Language.craft) then
 				TriggerServerEvent("syn_weapons:itemscheck", itemtosend, materialtosend, craftcost)
 				WarMenu.CloseMenu()
+				GetJob = false
 			end
 			for k, v in pairs(Config5.ammo) do
 				if k == craftingammoitem then
@@ -983,8 +986,12 @@ CreateThread(function()
 				end
 			end
 		elseif WarMenu.IsMenuOpened('ammocraft2') then
-			local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
-			local playerjob = result[1]
+			local playerjob
+			if not GetJob then
+				GetJob       = true
+				local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+				playerjob    = result[1]
+			end
 			for k, v in pairs(Config5.ammo) do
 				if k == craftingammoitem then
 					for l, m in pairs(v) do
@@ -1022,6 +1029,7 @@ CreateThread(function()
 				craftcost = nil
 				FreezeEntityPosition(PlayerPedId(), false)
 				WarMenu.CloseMenu()
+				GetJob = false
 			end
 			if WarMenu.MenuButton(Config2.Language.no, "crafting") then end
 		elseif WarMenu.IsMenuOpened('confirmbuy') then
@@ -1031,6 +1039,7 @@ CreateThread(function()
 				sum = 0
 				cal = false
 				WarMenu.CloseMenu()
+				GetJob = false
 				Citizen.Wait(500)
 			end
 			if WarMenu.MenuButton(Config2.Language.no, "wepcomp") then end
@@ -1048,6 +1057,7 @@ CreateThread(function()
 				DeleteEntity(wepobject)
 				FreezeEntityPosition(PlayerPedId(), false)
 				WarMenu.CloseMenu()
+				GetJob = false
 			end
 			if WarMenu.MenuButton(Config2.Language.no, "wepcomp") then end
 		elseif WarMenu.IsMenuOpened('confirmed') then
@@ -2853,7 +2863,6 @@ CreateThread(function()
 				end
 			end
 		end
-
 		WarMenu.Display()
 		Wait(0)
 	end
