@@ -930,8 +930,12 @@ CreateThread(function()
 				end
 			end
 		elseif WarMenu.IsMenuOpened('wepcraft2') then
-			local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
-			local playerjob = result[1]
+			local playerjob
+			if not GetJob then
+				GetJob       = true
+				local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+				playerjob    = result[1]
+			end
 			for k, v in pairs(Config4.weapons) do
 				if k == craftingammoitem then
 					for l, m in pairs(v) do
