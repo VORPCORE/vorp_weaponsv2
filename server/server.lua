@@ -5,7 +5,7 @@ RegisterServerEvent("syn_weapons:addcomp", function(weaponid, added)
     local components = json.encode(added)
     if weaponid then
         local Parameters = { id = weaponid, comp = components }
-        exports.oxmysql:execute("UPDATE loadout Set comps=@comps WHERE id=@id", Parameters)
+        exports.oxmysql:execute("UPDATE loadout Set comps=@comp WHERE id=@id", Parameters)
     end
 end)
 
@@ -210,7 +210,7 @@ RegisterServerEvent("syn_weapons:buyammo", function(itemtobuy, itemprice, count,
 
     local canCarry = inventory:canCarryItem(source, itemtobuy, count)
     if not canCarry then
-        return TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarryitem, 3000)
+        return Core.NotifyRightTip(_source, Config2.Language.cantcarryitem, 3000)
     end
 
     if total >= 0 then
@@ -249,7 +249,7 @@ RegisterServerEvent("syn_weapons:itemscheck", function(item, materials, craftcos
     end
 
     local function canCarryItems()
-        local canCarry = inventory:canCarryItem(source, item, 1)
+        local canCarry = inventory:canCarryItem(_source, item, 1)
         if not canCarry then
             return false
         end
@@ -258,12 +258,12 @@ RegisterServerEvent("syn_weapons:itemscheck", function(item, materials, craftcos
 
     if not canCarryItems() then
         TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
-        return TriggerClientEvent("vorp:TipRight", _source, Config2.Language.cantcarryitem, 3000)
+        return Core.NotifyRightTip(_source, Config2.Language.cantcarryitem, 3000)
     end
 
     if not contain(checkingtable, "false") then
         TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
-        TriggerClientEvent("vorp:TipRight", _source, Config2.Language.nomaterial, 3000)
+        Core.NotifyRightTip(_source, Config2.Language.nomaterial, 3000)
         return
     end
 
@@ -285,8 +285,7 @@ RegisterServerEvent("syn_weapons:itemscheck", function(item, materials, craftcos
     subItems()
 end)
 
-RegisterServerEvent("syn_weapons:itemscheck2")
-AddEventHandler("syn_weapons:itemscheck2", function(label, item, materials, craftcost)
+RegisterServerEvent("syn_weapons:itemscheck2", function(label, item, materials, craftcost)
     local _source = source
     local checkingtable = {}
     local accepted
@@ -340,6 +339,7 @@ AddEventHandler("syn_weapons:itemscheck2", function(label, item, materials, craf
             return
         end
     end
+
     local ammo = { ["nothing"] = 0 }
     local components = { ["nothing"] = 0 }
     TriggerClientEvent("syn_weapons:itemcheckpassed2", _source)
