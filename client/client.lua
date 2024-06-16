@@ -687,10 +687,7 @@ CreateThread(function()
 					if not Config3.Stores[storeId].BlipHandle and storeConfig.showblip then
 						AddBlip(storeId)
 					end
-					if not Config3.Stores[storeId].NPC and storeConfig.SpawnNPC then
-						SpawnNPC(storeId)
-					end
-					-- ## run this before distance check  no need to run a code that is no meant for the client ## --
+
 					local coordsDist = vector3(coords.x, coords.y, coords.z)
 					local coordsStore = vector3(storeConfig.Pos.x, storeConfig.Pos.y, storeConfig.Pos.z)
 					local distance = #(coordsDist - coordsStore)
