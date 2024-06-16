@@ -333,7 +333,6 @@ AddEventHandler("syn_weapons:itemscheck2", function(label, item, materials, craf
 
     if Config.craftingcost then
         if charmoney >= craftcost then
-            TriggerEvent("vorp:removeMoney", _source, 0, craftcost)
             Character.removeCurrency(0, craftcost)
         else
             TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
