@@ -170,11 +170,24 @@ function SendWebhookMessage(webhook, message)
     end
 end
 
-RegisterServerEvent("syn_weapons:buyweapon", function(itemtobuy, itemprice, itemlabel)
+RegisterServerEvent("syn_weapons:buyweapon", function(weapon, weaponData, shop)
     local _source = source
+    local pedCoords = GetEntityCoords(GetPlayerPed(_source))
+    local shopCoords = vector3(shop.Pos.x, shop.Pos.y, shop.Pos.z)
+    local distance = #(pedCoords - shopCoords)
+    if distance > 3 then
+        return print("Player: " .. GetPlayerName(_source) .. " tried to buy a weapon when he was not in the shop. possible cheat! current ped coords: " .. pedCoords .. " shop: " .. shop)
+    end
     local Character = Core.getUser(_source).getUsedCharacter
     local playername = Character.firstname .. ' ' .. Character.lastname
     local money = Character.money
+    local itemlabel = weapon
+    local itemprice = weaponData.price
+    local itemtobuy = weaponData.hashname
+
+    if itemprice <= 0 then
+        return print("trying to buy a weapon with price 0 possible exploit Player: " .. GetPlayerName(_source) .. " current coords " .. pedCoords .. " shop: " .. shop)
+    end
 
     local canCarry = inventory:canCarryWeapons(_source, 1, nil, itemtobuy:upper())
     if not canCarry then
@@ -195,30 +208,39 @@ RegisterServerEvent("syn_weapons:buyweapon", function(itemtobuy, itemprice, item
     end
 end)
 
-RegisterServerEvent("syn_weapons:buyammo", function(itemtobuy, itemprice, count, itemlabel)
+RegisterServerEvent("syn_weapons:buyammo", function(d, j, v, count, shop)
     local _source = source
-
-    if not count then
-        count = 1
+    local pedCoords = GetEntityCoords(GetPlayerPed(_source))
+    local shopCoords = vector3(v.Pos.x, v.Pos.y, v.Pos.z)
+    local distance = #(pedCoords - shopCoords)
+    if distance > 3 then
+        return print("Player: " .. GetPlayerName(_source) .. " tried to buy ammo when he was not in the shop. possible cheat! current ped coords: " .. pedCoords .. " shop: " .. shop)
     end
 
+    local itemlabel = j
+    local itemprice = d.price
+    local itemtobuy = d.item
     local Character = Core.getUser(_source).getUsedCharacter
     local playername = Character.firstname .. ' ' .. Character.lastname
     local money = Character.money
-    local take = itemprice * count
-    local total = money - take
+    count = count or 1
+    local total = itemprice * count
 
     local canCarry = inventory:canCarryItem(source, itemtobuy, count)
     if not canCarry then
         return Core.NotifyRightTip(_source, Config2.Language.cantcarryitem, 3000)
     end
 
-    if total >= 0 then
-        Character.removeCurrency(0, take)
+    if total <= 0 then
+        return print("trying to buy an item with price 0 possible exploit Player: " .. GetPlayerName(_source) .. " current coords " .. pedCoords .. " shop: " .. shop)
+    end
+
+    if total < money then
+        Character.removeCurrency(0, total)
         local message = Config2.Language.syn_weapons .. playername .. Config2.Language.bought .. itemlabel
         SendWebhookMessage(Config.adminwebhook, message)
         inventory:addItem(_source, itemtobuy, count)
-        Core.NotifyRightTip(_source, Config2.Language.youboughta .. itemlabel .. Config2.Language.fors .. take .. Config2.Language.dollar, 3000)
+        Core.NotifyRightTip(_source, Config2.Language.youboughta .. itemlabel .. Config2.Language.fors .. total .. Config2.Language.dollar, 3000)
     else
         Core.NotifyRightTip(_source, Config2.Language.nomoney, 3000)
     end

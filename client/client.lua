@@ -839,61 +839,35 @@ CreateThread(function()
 				end
 			end
 		elseif WarMenu.IsMenuOpened('ammoz2') then
-			for k, v in pairs(Config3.Stores) do
-				if k == currentshop then
-					for l, m in pairs(v.ammo) do
-						if category == l then
-							for j, d in pairs(m) do
-								if WarMenu.MenuButton("" .. j .. " / " .. Config2.Language.cost .. d.price .. Config2.Language.dollar, "shop") then
-									FreezeEntityPosition(PlayerPedId(), false)
-									inshop = false
-									WarMenu.CloseMenu()
-									GetJob = false
-									TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language.amount, function(cb)
-										local count = tonumber(cb)
-										count = math.floor(count) -- prevent decimals
-										if count ~= nil and count ~= 0 and count > 0 then
-											itemlabel = j
-											itemprice = d.price
-											itemtobuy = d.item
-											TriggerServerEvent("syn_weapons:buyammo", itemtobuy, itemprice, count,
-												itemlabel)
-										else
-											TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
-										end
-									end)
-								end
-							end
+			local v = Config3.Stores[currentshop]
+			local m = v.ammo[category] or {}
+			for j, d in pairs(m) do
+				if WarMenu.MenuButton("" .. j .. " / " .. Config2.Language.cost .. d.price .. Config2.Language.dollar, "shop") then
+					FreezeEntityPosition(PlayerPedId(), false)
+					inshop = false
+					WarMenu.CloseMenu()
+					GetJob = false
+					TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language.amount, function(cb)
+						local count = tonumber(cb)
+						count = math.floor(count) -- prevent decimals
+						if count ~= nil and count ~= 0 and count > 0 then
+							TriggerServerEvent("syn_weapons:buyammo", d, j, v, count, currentshop)
+						else
+							TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
 						end
-					end
+					end)
 				end
 			end
 		elseif WarMenu.IsMenuOpened('weaponz2') then
-			for k, v in pairs(Config3.Stores) do
-				if k == currentshop then
-					for l, m in pairs(v.weapons) do ----- more readable added weapon name instead of hash name.
-						if category == l then
-							for weapon, weaponData in pairs(m) do
-								if Config.syndual then
-									if WarMenu.MenuButton("" .. weapon .. " / " .. Config2.Language.cost .. Config2.Language.dollar .. weaponData.price, "shop") then
-										itemprice = weaponData.price
-										itemlabel = weapon
-										itemtobuy = weaponData.hashname
-										print(itemtobuy, itemprice, itemlabel)
-										TriggerServerEvent("syn_weapons:buyweapon", itemtobuy, itemprice, itemlabel)
-									end
-								else
-									if WarMenu.MenuButton("" .. weapon .. " / " .. Config2.Language.cost .. weaponData.price ..
-											Config2.Language.dollar, "shop") then
-										itemlabel = weapon
-										itemprice = weaponData.price
-										itemtobuy = weaponData.hashname
-										TriggerServerEvent("syn_weapons:buyweapon", itemtobuy, itemprice, itemlabel)
-									end
-								end
-							end
-						end
-					end
+			local v = Config3.Stores[currentshop]
+			local m = v.weapons[category] or {}
+			for weapon, weaponData in pairs(m) do
+				if WarMenu.MenuButton("" .. weapon .. " / " .. Config2.Language.cost .. weaponData.price .. Config2.Language.dollar, "shop") then
+					inshop = false
+					WarMenu.CloseMenu()
+					GetJob = false
+					FreezeEntityPosition(PlayerPedId(), false)
+					TriggerServerEvent("syn_weapons:buyweapon", weapon, weaponData, currentshop)
 				end
 			end
 		elseif WarMenu.IsMenuOpened('crafting') then
