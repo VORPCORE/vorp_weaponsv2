@@ -170,10 +170,10 @@ function SendWebhookMessage(webhook, message)
     end
 end
 
-RegisterServerEvent("syn_weapons:buyweapon", function(weapon, weaponData, shop)
+RegisterServerEvent("syn_weapons:buyweapon", function(weapon, weaponData, v, shop)
     local _source = source
     local pedCoords = GetEntityCoords(GetPlayerPed(_source))
-    local shopCoords = vector3(shop.Pos.x, shop.Pos.y, shop.Pos.z)
+    local shopCoords = vector3(v.Pos.x, v.Pos.y, v.Pos.z)
     local distance = #(pedCoords - shopCoords)
     if distance > 3 then
         return print("Player: " .. GetPlayerName(_source) .. " tried to buy a weapon when he was not in the shop. possible cheat! current ped coords: " .. pedCoords .. " shop: " .. shop)

@@ -867,7 +867,7 @@ CreateThread(function()
 					WarMenu.CloseMenu()
 					GetJob = false
 					FreezeEntityPosition(PlayerPedId(), false)
-					TriggerServerEvent("syn_weapons:buyweapon", weapon, weaponData, currentshop)
+					TriggerServerEvent("syn_weapons:buyweapon", weapon, weaponData, v, currentshop)
 				end
 			end
 		elseif WarMenu.IsMenuOpened('crafting') then
