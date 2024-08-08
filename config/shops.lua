@@ -986,7 +986,7 @@ Config3.Stores = {
                 ["Arrow Normal"] = {
                    
                     price = 2, 
-                    item = "ammoarrmownormal",
+                    item = "ammoarrownormal",
                     
                 },
                 --[[ ["Arrow Dynamite"] = {
@@ -1529,7 +1529,7 @@ Config3.Stores = {
                 ["Arrow Normal"] = {
                    
                     price = 1, 
-                    item = "ammoarrmownormal",
+                    item = "ammoarrownormal",
                     
                 },
                 ["Arrow Dynamite"] = {
@@ -2073,7 +2073,7 @@ Config3.Stores = {
                 ["Arrow Normal"] = {
                    
                     price = 5, 
-                    item = "ammoarrmownormal",
+                    item = "ammoarrownormal",
                     
                 },
                --[[  ["Arrow Dynamite"] = {
@@ -2617,7 +2617,7 @@ Config3.Stores = {
                 ["Arrow Normal"] = {
                    
                     price = 5, 
-                    item = "ammoarrmownormal",
+                    item = "ammoarrownormal",
                     
                 },
                 --[[ ["Arrow Dynamite"] = {
