@@ -849,8 +849,8 @@ CreateThread(function()
 					GetJob = false
 					TriggerEvent("vorpinputs:getInput", Config2.Language.confirm, Config2.Language.amount, function(cb)
 						local count = tonumber(cb)
-						count = math.floor(count) -- prevent decimals
 						if count ~= nil and count ~= 0 and count > 0 then
+							count = math.floor(count) -- prevent decimals
 							TriggerServerEvent("syn_weapons:buyammo", d, j, v, count, currentshop)
 						else
 							TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
