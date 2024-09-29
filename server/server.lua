@@ -67,13 +67,14 @@ CreateThread(function()
                 local _source = data.source
                 local ammo = inventory:getUserAmmo(_source)
                 local count = containsammo(ammo, m.key)
-                if count >= m.maxammo then
-                    return
-                elseif m.maxammo <= (m.qt + count) then
-                    return
-                elseif (m.qt + count) >= m.maxammo then
-                    m.qt = m.maxammo - count
+                        
+                if count >= m.maxammo or (m.qt + count) > m.maxammo then
+                    return Core.NotifyObjective(_source,"cant use more ammo, max allowed reached",5000)
                 end
+               --[[  if (m.qt + count) >= m.maxammo then
+                    m.qt = m.maxammo - count
+                end ]]-- not really sure what this do? why is it modifying config ammo of the server m.qt ?
+                        
                 inventory:subItem(_source, m.item, 1)
                 inventory:addBullets(_source, m.key, m.qt)
             end)
