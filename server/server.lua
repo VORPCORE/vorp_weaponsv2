@@ -69,8 +69,6 @@ CreateThread(function()
                 local count = containsammo(ammo, m.key)
                 if count >= m.maxammo then
                     return
-                elseif m.maxammo <= (m.qt + count) then
-                    return
                 elseif (m.qt + count) >= m.maxammo then
                     m.qt = m.maxammo - count
                 end
