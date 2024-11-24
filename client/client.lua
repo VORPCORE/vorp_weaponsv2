@@ -22,21 +22,19 @@ local modelz = false
 local next = next
 local inshop = false
 local currentshop
-local itemprice
-local itemlabel
 local category
 local OpenStores
 local CloseStores
-local itemtobuy
 local blip
 local OpenGroup = GetRandomIntInRange(0, 0xffffff)
 local CloseGroup = GetRandomIntInRange(0, 0xffffff)
+
 local progressbar = exports.vorp_progressbar:initiate()
 local Core = exports.vorp_core:GetCore()
 
 RegisterNetEvent("vorp_weapons:removeallammo") -- new event
 AddEventHandler("vorp_weapons:removeallammo", function()
-	TriggerServerEvent("syn_weapons:removeallammoserver")
+	TriggerServerEvent("vorp_weapons:removeallammoserver")
 	Citizen.InvokeNative(0xF25DF915FA38C5F3, PlayerPedId(), 1, 1)
 	Citizen.InvokeNative(0x1B83C0DEEBCBB214, PlayerPedId())
 end)
@@ -89,8 +87,8 @@ end
 
 local function PromptSetUp()
 	local str = "Press"
-	OpenStores = PromptRegisterBegin()
-	PromptSetControlAction(OpenStores, Config.keys["G"])
+	OpenStores = UiPromptRegisterBegin()
+	UiPromptSetControlAction(OpenStores, Config.keys["G"])
 	str = CreateVarString(10, 'LITERAL_STRING', str)
 	PromptSetText(OpenStores, str)
 	PromptSetEnabled(OpenStores, 1)
@@ -117,13 +115,13 @@ end
 
 RegisterNetEvent("vorp:SelectedCharacter")
 AddEventHandler("vorp:SelectedCharacter", function()
-	TriggerEvent("syn_weapons:initalizing")
+	TriggerEvent("vorp_weapons:initalizing")
 	Wait(1000)
 	RemoveAllPedWeapons(PlayerPedId(), true, true)
 end)
 
 
-RegisterNetEvent("syn_weapons:itemcheckpassed", function()
+RegisterNetEvent("vorp_weapons:itemcheckpassed", function()
 	playanim("WORLD_HUMAN_CROUCH_INSPECT", Config2.Language.craftingloading)
 	crafting = false
 	craftingammoitem = nil
@@ -134,7 +132,7 @@ RegisterNetEvent("syn_weapons:itemcheckpassed", function()
 	FreezeEntityPosition(PlayerPedId(), false)
 end)
 
-RegisterNetEvent("syn_weapons:itemcheckpassed2", function()
+RegisterNetEvent("vorp_weapons:itemcheckpassed2", function()
 	playanim(Config.craftinganimations, Config2.Language.craftingloading)
 	crafting = false
 	craftingammoitem = nil
@@ -145,8 +143,8 @@ RegisterNetEvent("syn_weapons:itemcheckpassed2", function()
 	FreezeEntityPosition(PlayerPedId(), false)
 end)
 
-RegisterNetEvent("syn_weapons:itemcheckfailed")
-AddEventHandler("syn_weapons:itemcheckfailed", function()
+RegisterNetEvent("vorp_weapons:itemcheckfailed")
+AddEventHandler("vorp_weapons:itemcheckfailed", function()
 	crafting = false
 	craftingammoitem = nil
 	craftingammoitem2 = nil
@@ -156,11 +154,11 @@ AddEventHandler("syn_weapons:itemcheckfailed", function()
 	FreezeEntityPosition(PlayerPedId(), false)
 end)
 
-RegisterNetEvent("syn_weapons:applymods")
-AddEventHandler("syn_weapons:applymods", function()
+RegisterNetEvent("vorp_weapons:applymods")
+AddEventHandler("vorp_weapons:applymods", function()
 	makeEntityFaceEntity(wepobject)
 	playanim(Config.customizationanimation, Config2.Language.customloading)
-	TriggerServerEvent("syn_weapons:addcomp", weaponid, added)
+	TriggerServerEvent("vorp_weapons:addcomp", weaponid, added)
 	for k, v in pairs(compss) do
 		RemoveWeaponComponentFromPed(PlayerPedId(), v.name, globalhash)
 	end
@@ -183,8 +181,8 @@ AddEventHandler("syn_weapons:applymods", function()
 	weaponid = nil
 end)
 
-RegisterNetEvent("syn_weapons:nomods")
-AddEventHandler("syn_weapons:nomods", function()
+RegisterNetEvent("vorp_weapons:nomods")
+AddEventHandler("vorp_weapons:nomods", function()
 	createdobject = false
 	DeleteEntity(wepobject)
 	FreezeEntityPosition(PlayerPedId(), false)
@@ -198,7 +196,7 @@ end)
 
 AddEventHandler("onResourceStart", function(resourceName)
 	if resourceName == GetCurrentResourceName() then
-		TriggerEvent("syn_weapons:initalizing")
+		TriggerEvent("vorp_weapons:initalizing")
 	end
 end
 )
@@ -230,8 +228,8 @@ local function jobcheck(table, element)
 	return false
 end
 
-RegisterNetEvent("syn_weapons:initalizing")
-AddEventHandler("syn_weapons:initalizing", function()
+RegisterNetEvent("vorp_weapons:initalizing")
+AddEventHandler("vorp_weapons:initalizing", function()
 	comps = json.decode(LoadResourceFile(GetCurrentResourceName(), 'wepcomps.json'))
 	Wait(1000)
 	for k, v in pairs(comps) do
@@ -466,7 +464,7 @@ CreateThread(function()
 
 					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 						if Config.jobonly then
-							local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+							local result = Core.Callback.TriggerAwait("vorp_weapons:getjob")
 							local playerjob = result[1]
 							local playerrank = result[2]
 							if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcustomization then
@@ -484,7 +482,7 @@ CreateThread(function()
 											TriggerEvent("vorp:TipBottom", Config2.Language.pleaserequip, 4000)
 										else
 											if wep ~= nil and wep ~= 0 and globalhash ~= nil then
-												TriggerEvent("syn_weapons:wepcomp")
+												TriggerEvent("vorp_weapons:wepcomp")
 												Citizen.Wait(1000)
 												WarMenu.OpenMenu('wepcomp')
 												TaskStandStill(ped, -1)
@@ -513,7 +511,7 @@ CreateThread(function()
 										TriggerEvent("vorp:TipBottom", Config2.Language.pleaserequip, 4000)
 									else
 										if wep ~= nil and wep ~= 0 and globalhash ~= nil then
-											TriggerEvent("syn_weapons:wepcomp")
+											TriggerEvent("vorp_weapons:wepcomp")
 											Citizen.Wait(1000)
 											WarMenu.OpenMenu('wepcomp')
 											createobject(v.Pos2.x, v.Pos2.y, v.Pos2.z, globalhash)
@@ -549,7 +547,7 @@ CreateThread(function()
 
 					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 						if Config.jobonly then
-							local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+							local result = Core.Callback.TriggerAwait("vorp_weapons:getjob")
 							local playerjob = result[1]
 							local playerrank = result[2]
 							if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcrafting then
@@ -726,8 +724,8 @@ end)
 
 
 
-RegisterNetEvent("syn_weapons:wepcomp")
-AddEventHandler("syn_weapons:wepcomp", function()
+RegisterNetEvent("vorp_weapons:wepcomp")
+AddEventHandler("vorp_weapons:wepcomp", function()
 	local ped = PlayerPedId()
 	local _, wepHash = GetCurrentPedWeapon(ped, true, 0, true)
 	compss = {}
@@ -851,7 +849,7 @@ CreateThread(function()
 						local count = tonumber(cb)
 						if count ~= nil and count ~= 0 and count > 0 then
 							count = math.floor(count) -- prevent decimals
-							TriggerServerEvent("syn_weapons:buyammo", d, j, v, count, currentshop)
+							TriggerServerEvent("vorp_weapons:buyammo", d, j, v, count, currentshop)
 						else
 							TriggerEvent("vorp:TipBottom", Config2.Language.invalidamount, 4000)
 						end
@@ -867,7 +865,7 @@ CreateThread(function()
 					WarMenu.CloseMenu()
 					GetJob = false
 					FreezeEntityPosition(PlayerPedId(), false)
-					TriggerServerEvent("syn_weapons:buyweapon", weapon, weaponData, v, currentshop)
+					TriggerServerEvent("vorp_weapons:buyweapon", weapon, weaponData, v, currentshop)
 				end
 			end
 		elseif WarMenu.IsMenuOpened('crafting') then
@@ -882,7 +880,7 @@ CreateThread(function()
 			end
 		elseif WarMenu.IsMenuOpened('wepcraft3') then
 			if WarMenu.Button(Config2.Language.craft) then
-				TriggerServerEvent("syn_weapons:itemscheck2", craftingammoitem2, itemtosend, materialtosend, craftcost)
+				TriggerServerEvent("vorp_weapons:itemscheck2", craftingammoitem2, itemtosend, materialtosend, craftcost)
 				WarMenu.CloseMenu()
 				GetJob = false
 			end
@@ -904,7 +902,7 @@ CreateThread(function()
 			local playerjob
 			if not GetJob then
 				GetJob       = true
-				local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+				local result = Core.Callback.TriggerAwait("vorp_weapons:getjob")
 				playerjob    = result[1]
 			end
 			for k, v in pairs(Config4.weapons) do
@@ -942,7 +940,7 @@ CreateThread(function()
 			end
 		elseif WarMenu.IsMenuOpened('ammocraft3') then
 			if WarMenu.Button(Config2.Language.craft) then
-				TriggerServerEvent("syn_weapons:itemscheck", itemtosend, materialtosend, craftcost)
+				TriggerServerEvent("vorp_weapons:itemscheck", itemtosend, materialtosend, craftcost)
 				WarMenu.CloseMenu()
 				GetJob = false
 			end
@@ -964,7 +962,7 @@ CreateThread(function()
 			local playerjob
 			if not GetJob then
 				GetJob       = true
-				local result = Core.Callback.TriggerAwait("syn_weapons:getjob")
+				local result = Core.Callback.TriggerAwait("vorp_weapons:getjob")
 				playerjob    = result[1]
 			end
 			for k, v in pairs(Config5.ammo) do
@@ -1009,7 +1007,7 @@ CreateThread(function()
 			if WarMenu.MenuButton(Config2.Language.no, "crafting") then end
 		elseif WarMenu.IsMenuOpened('confirmbuy') then
 			if WarMenu.Button(Config2.Language.yes) then
-				TriggerServerEvent("syn_weapons:checkmoney", sum)
+				TriggerServerEvent("vorp_weapons:checkmoney", sum)
 				pricing = {}
 				sum = 0
 				cal = false
@@ -2843,14 +2841,14 @@ CreateThread(function()
 	end
 end)
 
-RegisterNetEvent("syn_weapons:givecomp", function(components, id, hash)
+RegisterNetEvent("vorp_weapons:givecomp", function(components, id, hash)
 	globalhash = hash
 	weaponid = id
 	added = components
 	local ped = PlayerPedId()
 	wep = GetCurrentPedWeaponEntityIndex(ped, 0)
 	_, wepHash = GetCurrentPedWeapon(ped, true, 0, true)
-	TriggerEvent("syn_weapons:wepcomp")
+	TriggerEvent("vorp_weapons:wepcomp")
 	for k, v in pairs(compss) do
 		RemoveWeaponComponentFromPed(PlayerPedId(), v.name, globalhash)
 	end

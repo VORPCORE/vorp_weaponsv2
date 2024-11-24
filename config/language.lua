@@ -64,7 +64,7 @@ Config2.Language = {
         wrongwptype = "Wrong Weapon Type",
         craftingwepmods = "Crafting Weapon Mods",
         cantafford = "Cant Afford",
-        syn_weapons = "Weapons: ",
+        vorp_weapons = "Weapons: ",
         bought = " Bought ",
         youboughta = "You Bought A ",
         fors = " For ",
@@ -80,5 +80,5 @@ Config2.Language = {
         invalidamount = "Invalid Amount",
         craftcost = "Crafting cost: ",
         nomoneycraft = "You Dont have Enough Money for craft",
-    
+
 }

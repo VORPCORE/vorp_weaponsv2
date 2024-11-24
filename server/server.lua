@@ -1,7 +1,7 @@
 local Core = exports.vorp_core:GetCore()
 local inventory = exports.vorp_inventory
 
-RegisterServerEvent("syn_weapons:addcomp", function(weaponid, added)
+RegisterServerEvent("vorp_weapons:addcomp", function(weaponid, added)
     local components = json.encode(added)
     if weaponid then
         local Parameters = { id = weaponid, comp = components }
@@ -9,36 +9,36 @@ RegisterServerEvent("syn_weapons:addcomp", function(weaponid, added)
     end
 end)
 
-RegisterServerEvent("syn_weapons:weaponused", function(data)
+RegisterServerEvent("vorp_weapons:weaponused", function(data)
     local _source = source
     local id = data.id
     local hash = data.hash
     exports.oxmysql:execute('SELECT comps, used2 FROM loadout WHERE id = @id ', { id = id }, function(result)
         if result[1] then
             local components = json.decode(result[1].comps)
-            TriggerClientEvent("syn_weapons:givecomp", _source, components, id, hash)
+            TriggerClientEvent("vorp_weapons:givecomp", _source, components, id, hash)
         end
     end)
 end)
 
-RegisterServerEvent("syn_weapons:checkmoney", function(sum)
+RegisterServerEvent("vorp_weapons:checkmoney", function(sum)
     local _source = source
     local Character = Core.getUser(source).getUsedCharacter
     local currency = Config.customizationcurrency == 0 and Character.money or Character.gold
 
     if currency < sum then
-        TriggerClientEvent("syn_weapons:nomods", _source)
+        TriggerClientEvent("vorp_weapons:nomods", _source)
         Core.NotifyRightTip(_source, Config2.Language.cantafford, 3000)
         return
     end
 
     Character.removeCurrency(0, sum)
     Core.NotifyRightTip(_source, Config2.Language.craftingwepmods, 5000)
-    TriggerClientEvent("syn_weapons:applymods", _source)
+    TriggerClientEvent("vorp_weapons:applymods", _source)
 end)
 
 
-Core.Callback.Register("syn_weapons:getjob", function(source, cb, args)
+Core.Callback.Register("vorp_weapons:getjob", function(source, cb, args)
     local User = Core.getUser(source)
     local Character = User.getUsedCharacter
     local job = Character.job
@@ -55,7 +55,7 @@ local function containsammo(table, element)
     return 0
 end
 
-RegisterServerEvent("syn_weapons:removeallammoserver", function()
+RegisterServerEvent("vorp_weapons:removeallammoserver", function()
     local _source = source
     inventory:removeAllUserAmmo(_source)
 end)
@@ -67,14 +67,11 @@ CreateThread(function()
                 local _source = data.source
                 local ammo = inventory:getUserAmmo(_source)
                 local count = containsammo(ammo, m.key)
-                        
+
                 if count >= m.maxammo or (m.qt + count) > m.maxammo then
-                    return Core.NotifyObjective(_source,"cant use more ammo, max allowed reached",5000)
+                    return Core.NotifyObjective(_source, "cant use more ammo, max allowed reached", 5000)
                 end
-               --[[  if (m.qt + count) >= m.maxammo then
-                    m.qt = m.maxammo - count
-                end ]]-- not really sure what this do? why is it modifying config ammo of the server m.qt ?
-                        
+
                 inventory:subItem(_source, m.item, 1)
                 inventory:addBullets(_source, m.key, m.qt)
             end)
@@ -91,7 +88,7 @@ local function contains(table, element)
     return false
 end
 
-RegisterServerEvent("syn_weapons:addammo", function(wephash, qt, key, playeritem, item)
+RegisterServerEvent("vorp_weapons:addammo", function(wephash, qt, key, playeritem, item)
     local _source = source
     local Character = Core.getUser(_source).getUsedCharacter
     local identifier = Character.identifier
@@ -171,7 +168,7 @@ function SendWebhookMessage(webhook, message)
     end
 end
 
-RegisterServerEvent("syn_weapons:buyweapon", function(weapon, weaponData, v, shop)
+RegisterServerEvent("vorp_weapons:buyweapon", function(weapon, weaponData, v, shop)
     local _source = source
     local pedCoords = GetEntityCoords(GetPlayerPed(_source))
     local shopCoords = vector3(v.Pos.x, v.Pos.y, v.Pos.z)
@@ -198,7 +195,7 @@ RegisterServerEvent("syn_weapons:buyweapon", function(weapon, weaponData, v, sho
 
     if money >= itemprice then
         Character.removeCurrency(0, itemprice)
-        local message = Config2.Language.syn_weapons .. playername .. Config2.Language.bought .. itemtobuy
+        local message = Config2.Language.vorp_weapons .. playername .. Config2.Language.bought .. itemtobuy
         SendWebhookMessage(Config.adminwebhook, message)
         local ammo = { ["nothing"] = 0 }
         local components = { ["nothing"] = 0 }
@@ -209,7 +206,7 @@ RegisterServerEvent("syn_weapons:buyweapon", function(weapon, weaponData, v, sho
     end
 end)
 
-RegisterServerEvent("syn_weapons:buyammo", function(d, j, v, count, shop)
+RegisterServerEvent("vorp_weapons:buyammo", function(d, j, v, count, shop)
     local _source = source
     local pedCoords = GetEntityCoords(GetPlayerPed(_source))
     local shopCoords = vector3(v.Pos.x, v.Pos.y, v.Pos.z)
@@ -238,7 +235,7 @@ RegisterServerEvent("syn_weapons:buyammo", function(d, j, v, count, shop)
 
     if total < money then
         Character.removeCurrency(0, total)
-        local message = Config2.Language.syn_weapons .. playername .. Config2.Language.bought .. itemlabel
+        local message = Config2.Language.vorp_weapons .. playername .. Config2.Language.bought .. itemlabel
         SendWebhookMessage(Config.adminwebhook, message)
         inventory:addItem(_source, itemtobuy, count)
         Core.NotifyRightTip(_source, Config2.Language.youboughta .. itemlabel .. Config2.Language.fors .. total .. Config2.Language.dollar, 3000)
@@ -247,7 +244,7 @@ RegisterServerEvent("syn_weapons:buyammo", function(d, j, v, count, shop)
     end
 end)
 
-RegisterServerEvent("syn_weapons:itemscheck", function(item, materials, craftcost)
+RegisterServerEvent("vorp_weapons:itemscheck", function(item, materials, craftcost)
     local _source = source
     local checkingtable = {}
     local accepted
@@ -280,12 +277,12 @@ RegisterServerEvent("syn_weapons:itemscheck", function(item, materials, craftcos
     end
 
     if not canCarryItems() then
-        TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
+        TriggerClientEvent("vorp_weapons:itemcheckfailed", _source)
         return Core.NotifyRightTip(_source, Config2.Language.cantcarryitem, 3000)
     end
 
     if not contain(checkingtable, "false") then
-        TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
+        TriggerClientEvent("vorp_weapons:itemcheckfailed", _source)
         Core.NotifyRightTip(_source, Config2.Language.nomaterial, 3000)
         return
     end
@@ -294,21 +291,21 @@ RegisterServerEvent("syn_weapons:itemscheck", function(item, materials, craftcos
         if charmoney >= craftcost then
             Character.removeCurrency(0, craftcost)
         else
-            TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
+            TriggerClientEvent("vorp_weapons:itemcheckfailed", _source)
             Core.NotifyRightTip(_source, Config2.Language.nomoneycraft, 3000)
             return
         end
     end
 
-    TriggerClientEvent("syn_weapons:itemcheckpassed", _source)
+    TriggerClientEvent("vorp_weapons:itemcheckpassed", _source)
     inventory:addItem(_source, item, 1)
     Core.NotifyRightTip(_source, Config2.Language.crafting, 3000)
-    local message = Config2.Language.syn_weapons .. playername .. Config2.Language.crafted .. item
+    local message = Config2.Language.vorp_weapons .. playername .. Config2.Language.crafted .. item
     SendWebhookMessage(Config.adminwebhook, message)
     subItems()
 end)
 
-RegisterServerEvent("syn_weapons:itemscheck2", function(label, item, materials, craftcost)
+RegisterServerEvent("vorp_weapons:itemscheck2", function(label, item, materials, craftcost)
     local _source = source
     local checkingtable = {}
     local accepted
@@ -328,7 +325,7 @@ RegisterServerEvent("syn_weapons:itemscheck2", function(label, item, materials, 
     end
 
     if not contain(checkingtable, "false") then
-        TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
+        TriggerClientEvent("vorp_weapons:itemcheckfailed", _source)
         Core.NotifyRightTip(_source, Config2.Language.nomaterial, 3000)
         return
     end
@@ -348,7 +345,7 @@ RegisterServerEvent("syn_weapons:itemscheck2", function(label, item, materials, 
     end
 
     if not CanCarryWep() then
-        TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
+        TriggerClientEvent("vorp_weapons:itemcheckfailed", _source)
         Core.NotifyRightTip(_source, Config2.Language.cantcarrywep, 3000)
         return
     end
@@ -357,7 +354,7 @@ RegisterServerEvent("syn_weapons:itemscheck2", function(label, item, materials, 
         if charmoney >= craftcost then
             Character.removeCurrency(0, craftcost)
         else
-            TriggerClientEvent("syn_weapons:itemcheckfailed", _source)
+            TriggerClientEvent("vorp_weapons:itemcheckfailed", _source)
             Core.NotifyRightTip(_source, Config2.Language.nomoneycraft, 5000)
             return
         end
@@ -365,10 +362,10 @@ RegisterServerEvent("syn_weapons:itemscheck2", function(label, item, materials, 
 
     local ammo = { ["nothing"] = 0 }
     local components = { ["nothing"] = 0 }
-    TriggerClientEvent("syn_weapons:itemcheckpassed2", _source)
+    TriggerClientEvent("vorp_weapons:itemcheckpassed2", _source)
     inventory:createWeapon(_source, item, ammo, components)
     Core.NotifyRightTip(_source, Config2.Language.crafting, 5000)
-    local message = Config2.Language.syn_weapons .. playername .. Config2.Language.crafted .. label
+    local message = Config2.Language.vorp_weapons .. playername .. Config2.Language.crafted .. label
     SendWebhookMessage(Config.adminwebhook, message)
     subItem()
 end)
