@@ -88,7 +88,7 @@ end
 local function PromptSetUp()
 	local str = "Press"
 	OpenStores = UiPromptRegisterBegin()
-	UiPromptSetControlAction(OpenStores, Config.keys["G"])
+	UiPromptSetControlAction(OpenStores, Config.General.keys["G"])
 	str = CreateVarString(10, 'LITERAL_STRING', str)
 	PromptSetText(OpenStores, str)
 	PromptSetEnabled(OpenStores, 1)
@@ -102,7 +102,7 @@ end
 local function PromptSetUp2()
 	local str = "Store Closed"
 	CloseStores = PromptRegisterBegin()
-	PromptSetControlAction(CloseStores, Config.keys["G"])
+	PromptSetControlAction(CloseStores, Config.General.keys["G"])
 	str = CreateVarString(10, 'LITERAL_STRING', str)
 	PromptSetText(CloseStores, str)
 	PromptSetEnabled(CloseStores, 1)
@@ -133,7 +133,7 @@ RegisterNetEvent("vorp_weapons:itemcheckpassed", function()
 end)
 
 RegisterNetEvent("vorp_weapons:itemcheckpassed2", function()
-	playanim(Config.craftinganimations, Config.Language.craftingloading)
+	playanim(Config.General.craftinganimations, Config.Language.craftingloading)
 	crafting = false
 	craftingammoitem = nil
 	craftingammoitem2 = nil
@@ -157,7 +157,7 @@ end)
 RegisterNetEvent("vorp_weapons:applymods")
 AddEventHandler("vorp_weapons:applymods", function()
 	makeEntityFaceEntity(wepobject)
-	playanim(Config.customizationanimation, Config.Language.customloading)
+	playanim(Config.General.customizationanimation, Config.Language.customloading)
 	TriggerServerEvent("vorp_weapons:addcomp", weaponid, added)
 	for k, v in pairs(compss) do
 		RemoveWeaponComponentFromPed(PlayerPedId(), v.name, globalhash)
@@ -236,71 +236,71 @@ AddEventHandler("vorp_weapons:initalizing", function()
 		for x, l in pairs(v) do
 			if l.confirmed == 1 then
 				if l.comp == "variant" then
-					l.price = Config.price.variant
+					l.price = Config.General.price.variant
 				elseif l.comp == "gripbody" then
-					l.price = Config.price.griptype
+					l.price = Config.General.price.griptype
 				elseif l.comp == "grip" then
-					l.price = Config.price.gripdecal
+					l.price = Config.General.price.gripdecal
 				elseif l.comp == "decal" then
 					if l.type == "cylinder" then
-						l.price = Config.price.decalextra
+						l.price = Config.General.price.decalextra
 					elseif l.type == "frame" then
-						l.price = Config.price.decalframe
+						l.price = Config.General.price.decalframe
 					elseif l.type == "barrel" then
-						l.price = Config.price.decalbarrel
+						l.price = Config.General.price.decalbarrel
 					end
 				elseif l.comp == "wrapcolor" then
-					l.price = Config.price.wrapcolor
+					l.price = Config.General.price.wrapcolor
 				elseif l.comp == "comp" then
 					if l.type == "scope" then
-						l.price = Config.price.sight
+						l.price = Config.General.price.sight
 					elseif l.type == "rifling" then
-						l.price = Config.price.rifling
+						l.price = Config.General.price.rifling
 					elseif l.type == "other" then
-						l.price = Config.price.barrel
+						l.price = Config.General.price.barrel
 					elseif l.type == "wrap" then
-						l.price = Config.price.wrap
+						l.price = Config.General.price.wrap
 					end
 				elseif l.comp == "barrel" or l.comp == "trigger" or l.comp == "cylinder" or l.comp == "frontsight" or
 					l.comp == "frame" or l.comp == "scope" then
 					if l.label == "Gold" then
-						l.price = Config.price.gold
+						l.price = Config.General.price.gold
 					elseif l.label == "Silver" then
-						l.price = Config.price.silver
+						l.price = Config.General.price.silver
 					elseif l.label == "Blued Steel" then
-						l.price = Config.price.bluesteel
+						l.price = Config.General.price.bluesteel
 					elseif l.label == "Browned Steel" then
-						l.price = Config.price.brownsteel
+						l.price = Config.General.price.brownsteel
 					elseif l.label == "Blackened Steel" then
-						l.price = Config.price.blacksteel
+						l.price = Config.General.price.blacksteel
 					elseif l.label == "Copper" then
-						l.price = Config.price.copper
+						l.price = Config.General.price.copper
 					elseif l.label == "Nickel" then
-						l.price = Config.price.nickle
+						l.price = Config.General.price.nickle
 					elseif l.label == "Brass" then
-						l.price = Config.price.brass
+						l.price = Config.General.price.brass
 					elseif l.label == "Iron" then
-						l.price = Config.price.iron
+						l.price = Config.General.price.iron
 					end
 				elseif l.comp == "decalcolor" then
 					if l.label == "Gold" then
-						l.price = Config.price.gold
+						l.price = Config.General.price.gold
 					elseif l.label == "Silver" then
-						l.price = Config.price.silver
+						l.price = Config.General.price.silver
 					elseif l.label == "Blued Steel" then
-						l.price = Config.price.bluesteel
+						l.price = Config.General.price.bluesteel
 					elseif l.label == "Browned Steel" then
-						l.price = Config.price.brownsteel
+						l.price = Config.General.price.brownsteel
 					elseif l.label == "Blackened Steel" then
-						l.price = Config.price.blacksteel
+						l.price = Config.General.price.blacksteel
 					elseif l.label == "Copper" then
-						l.price = Config.price.copper
+						l.price = Config.General.price.copper
 					elseif l.label == "Nickel" then
-						l.price = Config.price.nickle
+						l.price = Config.General.price.nickle
 					elseif l.label == "Brass" then
-						l.price = Config.price.brass
+						l.price = Config.General.price.brass
 					elseif l.label == "Iron" then
-						l.price = Config.price.iron
+						l.price = Config.General.price.iron
 					end
 				end
 			end
@@ -340,7 +340,7 @@ end
 function DrawText3D(x, y, z, text)
 	local onScreen, _x, _y = GetScreenCoordFromWorldCoord(x, y, z)
 	local px, py, pz = table.unpack(GetGameplayCamCoord())
-	local str = CreateVarString(10, "LITERAL_STRING", text, Citizen.ResultAsLong())
+	local str = VarString(10, "LITERAL_STRING", text, Citizen.ResultAsLong())
 	if onScreen then
 		SetTextScale(0.30, 0.30)
 		SetTextFontForCurrentCommand(1)
@@ -377,7 +377,7 @@ end
 )
 
 local function drawtext(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
-	local str = CreateVarString(10, "LITERAL_STRING", str, Citizen.ResultAsLong())
+	local str = VarString(10, "LITERAL_STRING", str, Citizen.ResultAsLong())
 	SetTextScale(w, h)
 	SetTextColor(math.floor(col1), math.floor(col2), math.floor(col3), math.floor(a))
 	SetTextCentre(centre)
@@ -425,19 +425,19 @@ Citizen.CreateThread(function()
 			drawtext(Config.Language.rotateitem4, 0.25, 0.80, 0.3, 0.2, true, 255, 255, 255, 255, true)
 			HasStreamedTextureDictLoaded("menu_textures")
 			DrawSprite("menu_textures", "translate_bg_1a", 0.25, 0.78, 0.14, 0.12, 1.8, 0, 0, 0, 255, true)
-			if whenKeyJustPressed(Config.keys["1"]) then
+			if whenKeyJustPressed(Config.General.keys["1"]) then
 				h = h + 10
 				SetEntityRotation(wepobject, roll % 360, 0, h % 360, 1, true)
 			end
-			if whenKeyJustPressed(Config.keys["2"]) then
+			if whenKeyJustPressed(Config.General.keys["2"]) then
 				h = h - 10
 				SetEntityRotation(wepobject, roll % 360, 0, h % 360, 1, true)
 			end
-			if whenKeyJustPressed(Config.keys["3"]) then
+			if whenKeyJustPressed(Config.General.keys["3"]) then
 				roll = roll - 20
 				SetEntityRotation(wepobject, roll % 360, 0, h % 360, 1, true)
 			end
-			if whenKeyJustPressed(Config.keys["4"]) then
+			if whenKeyJustPressed(Config.General.keys["4"]) then
 				roll = roll + 20
 				SetEntityRotation(wepobject, roll % 360, 0, h % 360, 1, true)
 			end
@@ -454,20 +454,20 @@ CreateThread(function()
 		if not createdobject and not crafting and not inshop then
 			local coords = GetEntityCoords(PlayerPedId())
 
-			for k, v in pairs(Config.customizationLocations) do
+			for k, v in pairs(Config.General.customizationLocations) do
 				local dist = GetDistanceBetweenCoords(coords.x, coords.y, coords.z, v.Pos.x, v.Pos.y, v.Pos.z, true)
 
 				if dist < 1 then
 					sleep = 0
-					local Label = CreateVarString(10, 'LITERAL_STRING', Config.Language.presstobuy)
+					local Label = VarString(10, 'LITERAL_STRING', Config.Language.presstobuy)
 					PromptSetActiveGroupThisFrame(OpenGroup, Label)
 
 					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
-						if Config.jobonly then
+						if Config.General.jobonly then
 							local result = Core.Callback.TriggerAwait("vorp_weapons:getjob")
 							local playerjob = result[1]
 							local playerrank = result[2]
-							if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcustomization then
+							if jobcheck(Config.General.job, playerjob) and tonumber(playerrank) >= Config.General.jobrankcustomization then
 								local closestPlayer, closestDistance, playerid, tgt1 = GetClosestPlayer()
 								if closestPlayer ~= -1 and closestDistance <= 2.0 then
 									TriggerEvent("vorp:TipBottom", Config.Language.tooclose, 4000)
@@ -538,19 +538,19 @@ CreateThread(function()
 		if not crafting and not createdobject and not inshop then
 			local coords = GetEntityCoords(PlayerPedId())
 
-			for k, v in pairs(Config.craftinglocation) do
+			for k, v in pairs(Config.General.craftinglocation) do
 				local dist = GetDistanceBetweenCoords(coords.x, coords.y, coords.z, v.Pos.x, v.Pos.y, v.Pos.z, false)
 				if dist < 1 then
 					letSleep    = 0
-					local Label = CreateVarString(10, 'LITERAL_STRING', Config.Language.presstocraft)
+					local Label = VarString(10, 'LITERAL_STRING', Config.Language.presstocraft)
 					PromptSetActiveGroupThisFrame(OpenGroup, Label)
 
 					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
-						if Config.jobonly then
+						if Config.General.jobonly then
 							local result = Core.Callback.TriggerAwait("vorp_weapons:getjob")
 							local playerjob = result[1]
 							local playerrank = result[2]
-							if jobcheck(Config.job, playerjob) and tonumber(playerrank) >= Config.jobrankcrafting then
+							if jobcheck(Config.General.job, playerjob) and tonumber(playerrank) >= Config.General.jobrankcrafting then
 								crafting = true
 								WarMenu.OpenMenu('crafting')
 							else
@@ -570,8 +570,7 @@ end)
 
 local function AddBlip(Store)
 	if Config.Stores[Store].showblip then
-		Config.Stores[Store].BlipHandle = N_0x554d9d53f696d002(1664425300, Config.Stores[Store].Pos.x,
-			Config.Stores[Store].Pos.y, Config.Stores[Store].Pos.z)
+		Config.Stores[Store].BlipHandle = N_0x554d9d53f696d002(1664425300, Config.Stores[Store].Pos.x, Config.Stores[Store].Pos.y, Config.Stores[Store].Pos.z)
 		SetBlipSprite(Config.Stores[Store].BlipHandle, Config.Stores[Store].blipsprite, true)
 		SetBlipScale(Config.Stores[Store].BlipHandle, 0.2)
 		Citizen.InvokeNative(0x9CB1A1623062F402, Config.Stores[Store].BlipHandle, Config.Stores[Store].BlipName)
@@ -595,7 +594,7 @@ local function SpawnNPC(Store)
 end
 
 CreateThread(function()
-	if not Config.weaponshops then
+	if not Config.General.weaponshops then
 		return
 	end
 
@@ -632,18 +631,13 @@ CreateThread(function()
 
 						if (distance <= 3.0) then -- check distance
 							sleep = 0
-							local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
+							local Label = VarString(10, 'LITERAL_STRING', storeConfig.PromptName)
 							PromptSetActiveGroupThisFrame(CloseGroup, Label)
-							local label2 = CreateVarString(10, 'LITERAL_STRING',
-								Config.Language.closed .. storeConfig.StoreOpen ..
-								Config.Language.am .. storeConfig.StoreClose .. Config.Language.pm)
+							local label2 = VarString(10, 'LITERAL_STRING', Config.Language.closed .. storeConfig.StoreOpen .. Config.Language.am .. storeConfig.StoreClose .. Config.Language.pm)
 							PromptSetActiveGroupThisFrame(CloseGroup, label2)
 
 							if Citizen.InvokeNative(0xC92AC953F0A982AE, CloseStores) then
-								TriggerEvent("vorp:TipRight",
-									Config.Language.closed ..
-									storeConfig.StoreOpen ..
-									Config.Language.am .. storeConfig.StoreClose .. Config.Language.pm, 3000)
+								TriggerEvent("vorp:TipRight", Config.Language.closed .. storeConfig.StoreOpen .. Config.Language.am .. storeConfig.StoreClose .. Config.Language.pm, 3000)
 							end
 						end
 					elseif hour >= storeConfig.StoreOpen then
@@ -670,7 +664,7 @@ CreateThread(function()
 
 						if (distance <= 3.0) then -- check distance
 							sleep = 0
-							local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
+							local Label = VarString(10, 'LITERAL_STRING', storeConfig.PromptName)
 							PromptSetActiveGroupThisFrame(OpenGroup, Label)
 
 							if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
@@ -705,7 +699,7 @@ CreateThread(function()
 
 					if (distance <= 3.0) then -- check distance
 						sleep = 0
-						local Label = CreateVarString(10, 'LITERAL_STRING', storeConfig.PromptName)
+						local Label = VarString(10, 'LITERAL_STRING', storeConfig.PromptName)
 						PromptSetActiveGroupThisFrame(OpenGroup, Label)
 
 						if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then -- iff all pass open menu
@@ -750,7 +744,7 @@ AddEventHandler("vorp_weapons:wepcomp", function()
 end)
 
 CreateThread(function()
-	repeat Wait(1000) until LocalPlayer.state.IsInSession
+	repeat Wait(2000) until LocalPlayer.state.IsInSession
 
 	WarMenu.CreateMenu('wepcomp', Config.Language.customization)
 	WarMenu.CreateMenu('crafting', Config.Language.crafting)
@@ -888,7 +882,7 @@ CreateThread(function()
 				if k == craftingammoitem then
 					for l, m in pairs(v) do
 						if l == craftingammoitem2 then
-							if Config.craftingcost then
+							if Config.General.craftingcost then
 								if WarMenu.Button(Config.Language.craftcost .. "" .. m.craftcost .. "$") then end
 							end
 							for x, y in pairs(m.materials) do
@@ -948,7 +942,7 @@ CreateThread(function()
 				if k == craftingammoitem then
 					for l, m in pairs(v) do
 						if l == craftingammoitem2 then
-							if Config.craftingcost then
+							if Config.General.craftingcost then
 								if WarMenu.Button(Config.Language.craftcost .. "" .. m.craftcost .. "$") then end
 							end
 							for x, y in pairs(m.materials) do

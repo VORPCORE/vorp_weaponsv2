@@ -24,7 +24,7 @@ end)
 RegisterServerEvent("vorp_weapons:checkmoney", function(sum)
     local _source = source
     local Character = Core.getUser(source).getUsedCharacter
-    local currency = Config.customizationcurrency == 0 and Character.money or Character.gold
+    local currency = Config.General.customizationcurrency == 0 and Character.money or Character.gold
 
     if currency < sum then
         TriggerClientEvent("vorp_weapons:nomods", _source)
@@ -196,7 +196,8 @@ RegisterServerEvent("vorp_weapons:buyweapon", function(weapon, weaponData, v, sh
     if money >= itemprice then
         Character.removeCurrency(0, itemprice)
         local message = Config.Language.vorp_weapons .. playername .. Config.Language.bought .. itemtobuy
-        SendWebhookMessage(Config.adminwebhook, message)
+        local adminwebhook = "" -- add here webhook
+        SendWebhookMessage(adminwebhook, message)
         local ammo = { ["nothing"] = 0 }
         local components = { ["nothing"] = 0 }
         inventory:createWeapon(_source, itemtobuy:upper(), ammo, components)
@@ -236,7 +237,8 @@ RegisterServerEvent("vorp_weapons:buyammo", function(d, j, v, count, shop)
     if total < money then
         Character.removeCurrency(0, total)
         local message = Config.Language.vorp_weapons .. playername .. Config.Language.bought .. itemlabel
-        SendWebhookMessage(Config.adminwebhook, message)
+        local adminwebhook = "" -- add here webhook
+        SendWebhookMessage(adminwebhook, message)
         inventory:addItem(_source, itemtobuy, count)
         Core.NotifyRightTip(_source, Config.Language.youboughta .. itemlabel .. Config.Language.fors .. total .. Config.Language.dollar, 3000)
     else
@@ -301,7 +303,8 @@ RegisterServerEvent("vorp_weapons:itemscheck", function(item, materials, craftco
     inventory:addItem(_source, item, 1)
     Core.NotifyRightTip(_source, Config.Language.crafting, 3000)
     local message = Config.Language.vorp_weapons .. playername .. Config.Language.crafted .. item
-    SendWebhookMessage(Config.adminwebhook, message)
+    local adminwebhook = "" -- add here admin webhook
+    SendWebhookMessage(adminwebhook, message)
     subItems()
 end)
 
@@ -350,7 +353,7 @@ RegisterServerEvent("vorp_weapons:itemscheck2", function(label, item, materials,
         return
     end
 
-    if Config.craftingcost then
+    if Config.General.craftingcost then
         if charmoney >= craftcost then
             Character.removeCurrency(0, craftcost)
         else
@@ -366,6 +369,7 @@ RegisterServerEvent("vorp_weapons:itemscheck2", function(label, item, materials,
     inventory:createWeapon(_source, item, ammo, components)
     Core.NotifyRightTip(_source, Config.Language.crafting, 5000)
     local message = Config.Language.vorp_weapons .. playername .. Config.Language.crafted .. label
-    SendWebhookMessage(Config.adminwebhook, message)
+    local adminwebhook = "" -- add here webhook
+    SendWebhookMessage(adminwebhook, message)
     subItem()
 end)
