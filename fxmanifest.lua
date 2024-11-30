@@ -10,11 +10,11 @@ description 'A weapon handler with shops, crafting for vorp core framework'
 
 
 shared_scripts {
-  'config/shops.lua',
   'config/weapons.lua',
   'config/language.lua',
   'config/ammo.lua',
-  'config/config.lua'
+  'config/config.lua',
+  'config/shops.lua',
 }
 client_script {
   'client/warmenu.lua',
