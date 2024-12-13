@@ -9,7 +9,7 @@ RegisterServerEvent("vorp_weapons:addcomp", function(weaponid, added)
     end
 end)
 
-RegisterServerEvent("vorp_weapons:weaponused", function(data)
+RegisterServerEvent("syn_weapons:weaponused", function(data)
     local _source = source
     local id = data.id
     local hash = data.hash
