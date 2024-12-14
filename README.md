@@ -4,7 +4,7 @@ Weapon purchase, crafting, customization script made for VORP Core
 
 ---
 
-## Installation**
+## Installation
 - Place `vorp_weaponsv2` into your `resources` folder
 - Run SQL File
 - Add `ensure vorp_weaponsv2` to your `server.cfg` / `resources.cfg` file
