@@ -7,8 +7,6 @@ author 'VORP @blue'
 lua54 'yes'
 description 'A weapon handler with shops, crafting for vorp core framework'
 
-
-
 shared_scripts {
   'config/weapons.lua',
   'config/language.lua',
@@ -16,13 +14,19 @@ shared_scripts {
   'config/config.lua',
   'config/shops.lua',
 }
+
 client_script {
   'client/warmenu.lua',
   'client/client.lua'
 }
-server_script 'server/server.lua'
+
+server_scripts {
+  '@oxmysql/lib/MySQL.lua',
+  'server/server.lua'
+}
 
 file 'wepcomps.json'
+
 --dont touch
 version '2.2'
 vorp_checker 'yes'

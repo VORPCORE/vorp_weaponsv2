@@ -843,7 +843,7 @@ CreateThread(function()
 						local count = tonumber(cb)
 						if count ~= nil and count ~= 0 and count > 0 then
 							count = math.floor(count) -- prevent decimals
-							TriggerServerEvent("vorp_weapons:buyammo", d, j, v, count, currentshop)
+							TriggerServerEvent("vorp_weapons:buyammo", j, count, currentshop, category)
 						else
 							TriggerEvent("vorp:TipBottom", Config.Language.invalidamount, 4000)
 						end
@@ -859,7 +859,7 @@ CreateThread(function()
 					WarMenu.CloseMenu()
 					GetJob = false
 					FreezeEntityPosition(PlayerPedId(), false)
-					TriggerServerEvent("vorp_weapons:buyweapon", weapon, weaponData, v, currentshop)
+					TriggerServerEvent("vorp_weapons:buyweapon", weapon, currentshop, category)
 				end
 			end
 		elseif WarMenu.IsMenuOpened('crafting') then
@@ -867,7 +867,7 @@ CreateThread(function()
 			WarMenu.MenuButton(Config.Language.ammocrafting, "ammocraft")
 			WarMenu.MenuButton(Config.Language.exitmenu, "confirmexit2")
 		elseif WarMenu.IsMenuOpened('wepcraft') then
-			for k, v in pairs(Config.weapons) do
+			for k, _ in pairs(Config.weapons) do
 				if WarMenu.MenuButton("" .. k .. "", "wepcraft2") then
 					craftingammoitem = k
 				end

@@ -5,7 +5,7 @@ RegisterServerEvent("vorp_weapons:addcomp", function(weaponid, added)
     local components = json.encode(added)
     if weaponid then
         local Parameters = { id = weaponid, comp = components }
-        exports.oxmysql:execute("UPDATE loadout Set comps=@comp WHERE id=@id", Parameters)
+        MySQL.query("UPDATE loadout Set comps=@comp WHERE id=@id", Parameters)
     end
 end)
 
@@ -13,7 +13,7 @@ RegisterServerEvent("syn_weapons:weaponused", function(data)
     local _source = source
     local id = data.id
     local hash = data.hash
-    exports.oxmysql:execute('SELECT comps, used2 FROM loadout WHERE id = @id ', { id = id }, function(result)
+    MySQL.query('SELECT comps, used2 FROM loadout WHERE id = @id ', { id = id }, function(result)
         if result[1] then
             local components = json.decode(result[1].comps)
             TriggerClientEvent("vorp_weapons:givecomp", _source, components, id, hash)
@@ -38,7 +38,7 @@ RegisterServerEvent("vorp_weapons:checkmoney", function(sum)
 end)
 
 
-Core.Callback.Register("vorp_weapons:getjob", function(source, cb, args)
+Core.Callback.Register("vorp_weapons:getjob", function(source, cb)
     local User = Core.getUser(source)
     local Character = User.getUsedCharacter
     local job = Character.job
@@ -80,7 +80,7 @@ CreateThread(function()
 end)
 
 local function contains(table, element)
-    for k, v in pairs(table) do
+    for k, _ in pairs(table) do
         if k == element then
             return true
         end
@@ -96,7 +96,7 @@ RegisterServerEvent("vorp_weapons:addammo", function(wephash, qt, key, playerite
     local weapid
     local max
 
-    exports.oxmysql:execute('SELECT name,id,ammo FROM loadout WHERE identifier=@identifier AND charidentifier = @charidentifier ', { ['identifier'] = identifier, ['charidentifier'] = charidentifier }, function(result)
+    MySQL.query('SELECT name,id,ammo FROM loadout WHERE identifier=@identifier AND charidentifier = @charidentifier ', { ['identifier'] = identifier, ['charidentifier'] = charidentifier }, function(result)
         if result[1] then
             for i = 1, #result, 1 do
                 if playeritem == 0 then
@@ -104,22 +104,23 @@ RegisterServerEvent("vorp_weapons:addammo", function(wephash, qt, key, playerite
                         weapid = result[i].id
                     end
                 elseif playeritem ~= 0 then
-                    for k, v in pairs(playeritem) do
+                    for _, v in pairs(playeritem) do
                         if v == result[i].name then
                             weapid = result[i].id
                         end
                     end
                 end
             end
-            for k, v in pairs(Config.ammo) do
-                for l, m in pairs(v) do
+
+            for _, v in pairs(Config.ammo) do
+                for _, m in pairs(v) do
                     if m.key == key then
                         max = m.maxammo
                     end
                 end
             end
             if weapid then
-                exports.oxmysql:execute('SELECT ammo FROM loadout WHERE id = @id ', { ['id'] = weapid }, function(result)
+                MySQL.query('SELECT ammo FROM loadout WHERE id = @id ', { ['id'] = weapid }, function(result)
                     if result[1] then
                         local ammo = json.decode(result[1].ammo)
                         if contains(ammo, key) then
@@ -134,7 +135,7 @@ RegisterServerEvent("vorp_weapons:addammo", function(wephash, qt, key, playerite
                         end
                         if qt > 0 then
                             inventory:addBullets(_source, key, qt)
-                            exports.oxmysql:execute("UPDATE loadout Set ammo=@ammo WHERE id=@id", { id = weapid, ammo = json.encode(ammo) })
+                            MySQL.query("UPDATE loadout Set ammo=@ammo WHERE id=@id", { id = weapid, ammo = json.encode(ammo) })
                         else
                             inventory:addItem(_source, item, 1)
                         end
@@ -148,7 +149,7 @@ RegisterServerEvent("vorp_weapons:addammo", function(wephash, qt, key, playerite
 end)
 
 local function contain(table, element)
-    for k, v in pairs(table) do
+    for _, v in pairs(table) do
         if v == element then
             return false
         end
@@ -163,29 +164,38 @@ function SendWebhookMessage(webhook, message)
             'POST',
             json.encode({ content = message }),
             {
-                ['Content-Type'] = 'application/json' }
+                ['Content-Type'] = 'application/json'
+            }
         )
     end
 end
 
-RegisterServerEvent("vorp_weapons:buyweapon", function(weapon, weaponData, v, shop)
+RegisterServerEvent("vorp_weapons:buyweapon", function(weapon, shop, category)
     local _source = source
+    local user = Core.getUser(_source)
+    if not user then return end
+
+    local v = Config.Stores[shop]
+    if not v then return end
+
+    local data = v.weapons[category]
+    if not data then return end
+
+    local item = data[weapon]
+    if not item then return end
+
     local pedCoords = GetEntityCoords(GetPlayerPed(_source))
     local shopCoords = vector3(v.Pos.x, v.Pos.y, v.Pos.z)
     local distance = #(pedCoords - shopCoords)
-    if distance > 3 then
-        return print("Player: " .. GetPlayerName(_source) .. " tried to buy a weapon when he was not in the shop. possible cheat! current ped coords: " .. pedCoords .. " shop: " .. shop)
-    end
-    local Character = Core.getUser(_source).getUsedCharacter
+    if distance > 3 then return print("player is too far from shop to buy weapon") end
+
+    local Character = user.getUsedCharacter
     local playername = Character.firstname .. ' ' .. Character.lastname
     local money = Character.money
     local itemlabel = weapon
-    local itemprice = weaponData.price
-    local itemtobuy = weaponData.hashname
+    local itemprice = item.price
+    local itemtobuy = item.hashname
 
-    if itemprice <= 0 then
-        return print("trying to buy a weapon with price 0 possible exploit Player: " .. GetPlayerName(_source) .. " current coords " .. pedCoords .. " shop: " .. shop)
-    end
 
     local canCarry = inventory:canCarryWeapons(_source, 1, nil, itemtobuy:upper())
     if not canCarry then
@@ -207,22 +217,31 @@ RegisterServerEvent("vorp_weapons:buyweapon", function(weapon, weaponData, v, sh
     end
 end)
 
-RegisterServerEvent("vorp_weapons:buyammo", function(d, j, v, count, shop)
+RegisterServerEvent("vorp_weapons:buyammo", function(j, count, shop, category)
     local _source = source
+    local user = Core.getUser(_source)
+    if not user then return end
+
+    local v = Config.Stores[shop]
+    if not v then return end
+
+    local data = v.ammo[category]
+    if not data then return end
+
+    local item = data[j]
+    if not item then return end
+
     local pedCoords = GetEntityCoords(GetPlayerPed(_source))
     local shopCoords = vector3(v.Pos.x, v.Pos.y, v.Pos.z)
     local distance = #(pedCoords - shopCoords)
-    if distance > 3 then
-        return print("Player: " .. GetPlayerName(_source) .. " tried to buy ammo when he was not in the shop. possible cheat! current ped coords: " .. pedCoords .. " shop: " .. shop)
-    end
+    if distance > 3 then return print("player is too far from shop to buy ammo") end
 
     local itemlabel = j
-    local itemprice = d.price
-    local itemtobuy = d.item
-    local Character = Core.getUser(_source).getUsedCharacter
+    local itemprice = item.price
+    local itemtobuy = item.item
+    local Character = user.getUsedCharacter
     local playername = Character.firstname .. ' ' .. Character.lastname
     local money = Character.money
-    count = count or 1
     local total = itemprice * count
 
     local canCarry = inventory:canCarryItem(source, itemtobuy, count)
@@ -230,11 +249,7 @@ RegisterServerEvent("vorp_weapons:buyammo", function(d, j, v, count, shop)
         return Core.NotifyRightTip(_source, Config.Language.cantcarryitem, 3000)
     end
 
-    if total <= 0 then
-        return print("trying to buy an item with price 0 possible exploit Player: " .. GetPlayerName(_source) .. " current coords " .. pedCoords .. " shop: " .. shop)
-    end
-
-    if total < money then
+    if money >= total then
         Character.removeCurrency(0, total)
         local message = Config.Language.vorp_weapons .. playername .. Config.Language.bought .. itemlabel
         local adminwebhook = "" -- add here webhook
