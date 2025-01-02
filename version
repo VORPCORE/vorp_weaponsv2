@@ -1,3 +1,7 @@
+<2.3>
+- clean up some code
+- changed exports oxmysql to MySQL lint you will need to update fxmanifest for this
+- patch an exploit with buy ammo 
 <2.2>
 - fix for several exploits
 - clean up code
