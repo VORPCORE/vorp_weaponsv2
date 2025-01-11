@@ -1,4 +1,4 @@
-Config = {}
+Config = Config or {}
 Config.Language = {
         presstobuy = "Customize Weapon",
         presstocraft = " Craft Weapon",
