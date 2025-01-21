@@ -581,7 +581,7 @@ local function SpawnNPC(Store)
 	local v = Config.Stores[Store]
 	if v.SpawnNPC then
 		LoadModel(v.NpcModel)
-		local npc = CreatePed(v.NpcModel, v.Pos.x, v.Pos.y, v.Pos.z, 0.0, false, true, true, true)
+		local npc = CreatePed(v.NpcModel, v.Pos.x, v.Pos.y, v.Pos.z, v.Pos.h or 0.0, false, true, true, true)
 		Citizen.InvokeNative(0x283978A15512B2FE, npc, true)
 		PlaceEntityOnGroundProperly(npc, false)
 		SetEntityCanBeDamaged(npc, false)
