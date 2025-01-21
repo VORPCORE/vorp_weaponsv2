@@ -3,7 +3,7 @@ Config = Config or {}
 Config.Stores = {
     -- money for houses bought goes here. sellers have it to collected from here.
     Valentine = {                                            -- you can add more wep markets by copy pasting this
-        Pos = { x = -280.4646, y = 779.0331, z = 119.2540 }, -- location of wep market
+        Pos = { x = -280.4646, y = 779.0331, z = 119.2540,h = 0.0 }, -- location of wep market
         blipsprite = 202506373,                              -- blip sprite for wep market
         showblip = true,                                     -- show blip or not
         StoreHoursAllowed = true,                            -- if you want the stores to use opening and closed hours
@@ -548,7 +548,7 @@ Config.Stores = {
     },
     ---------------------------
     SaintD = {
-        Pos = { x = 2716.73, y = -1285.27, z = 49.63 },
+        Pos = { x = 2716.73, y = -1285.27, z = 49.63 ,h = 0.0},
         blipsprite = 202506373,
         showblip = true,
         StoreHoursAllowed = true,     -- if you want the stores to use opening and closed hours
@@ -1092,7 +1092,7 @@ Config.Stores = {
         }
     },
     --[[  Rhodes = {	
-        Pos = {x=1323.04, y=-1321.56, z=77.889},
+        Pos = {x=1323.04, y=-1321.56, z=77.889,h = 0.0},
         blipsprite = 202506373,
         showblip = true,
         Name = 'Weapons Shop',
@@ -1635,7 +1635,7 @@ Config.Stores = {
         }
     }, ]]
     Annesburg = {
-        Pos = { x = 2946.56, y = 1319.68, z = 44.82 },
+        Pos = { x = 2946.56, y = 1319.68, z = 44.82,h = 0.0 },
         blipsprite = 202506373,
         showblip = true,
         StoreHoursAllowed = true,       -- if you want the stores to use opening and closed hours
@@ -2179,7 +2179,7 @@ Config.Stores = {
         }
     },
     tumbleweed = {
-        Pos = { x = -5508.327, y = -2964.35, z = -0.6288 },
+        Pos = { x = -5508.327, y = -2964.35, z = -0.6288,h = 0.0 },
         blipsprite = 202506373,
         showblip = true,
         StoreHoursAllowed = true,        -- if you want the stores to use opening and closed hours
