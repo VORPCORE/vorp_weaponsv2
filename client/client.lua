@@ -87,8 +87,8 @@ end
 
 local function PromptSetUp()
 	local str = "Press"
-	OpenStores = UiPromptRegisterBegin()
-	UiPromptSetControlAction(OpenStores, Config.General.keys["G"])
+	OpenStores = PromptRegisterBegin()
+	PromptSetControlAction(OpenStores, Config.General.keys["G"])
 	str = CreateVarString(10, 'LITERAL_STRING', str)
 	PromptSetText(OpenStores, str)
 	PromptSetEnabled(OpenStores, 1)
@@ -446,8 +446,13 @@ Citizen.CreateThread(function()
 	end
 end)
 
+PromptInit = PromptSetUp()
+
 CreateThread(function()
-	repeat Wait(1000) until LocalPlayer.state.IsInSession
+	repeat 
+		Wait(1000) 
+	until LocalPlayer.state.IsInSession
+		
 	while true do
 		local sleep = 1000
 
@@ -461,7 +466,6 @@ CreateThread(function()
 					sleep = 0
 					local Label = VarString(10, 'LITERAL_STRING', Config.Language.presstobuy)
 					PromptSetActiveGroupThisFrame(OpenGroup, Label)
-
 					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 						if Config.General.jobonly then
 							local result = Core.Callback.TriggerAwait("vorp_weapons:getjob")
@@ -531,7 +535,10 @@ CreateThread(function()
 end)
 
 CreateThread(function()
-	repeat Wait(1000) until LocalPlayer.state.IsInSession
+	repeat 
+		Wait(1000) 
+	until LocalPlayer.state.IsInSession
+		
 	while true do
 		local letSleep = 1000
 
