@@ -89,28 +89,26 @@ local function PromptSetUp()
 	local str = "Press"
 	OpenStores = UiPromptRegisterBegin()
 	UiPromptSetControlAction(OpenStores, Config.General.keys["G"])
-	str = CreateVarString(10, 'LITERAL_STRING', str)
-	PromptSetText(OpenStores, str)
-	PromptSetEnabled(OpenStores, 1)
-	PromptSetVisible(OpenStores, 1)
-	PromptSetStandardMode(OpenStores, 1)
-	PromptSetGroup(OpenStores, OpenGroup)
-	Citizen.InvokeNative(0xC5F428EE08FA7F2C, OpenStores, true)
-	PromptRegisterEnd(OpenStores)
+	str = VarString(10, 'LITERAL_STRING', str)
+	UiPromptSetText(OpenStores, str)
+	UiPromptSetEnabled(OpenStores, true)
+	UiPromptSetVisible(OpenStores, true)
+	UiPromptSetStandardMode(OpenStores, true)
+	UiPromptSetGroup(OpenStores, OpenGroup, 0)
+	UiPromptRegisterEnd(OpenStores)
 end
 
 local function PromptSetUp2()
 	local str = "Store Closed"
-	CloseStores = PromptRegisterBegin()
-	PromptSetControlAction(CloseStores, Config.General.keys["G"])
-	str = CreateVarString(10, 'LITERAL_STRING', str)
-	PromptSetText(CloseStores, str)
-	PromptSetEnabled(CloseStores, 1)
-	PromptSetVisible(CloseStores, 1)
-	PromptSetStandardMode(CloseStores, 1)
-	PromptSetGroup(CloseStores, CloseGroup)
-	Citizen.InvokeNative(0xC5F428EE08FA7F2C, CloseStores, true)
-	PromptRegisterEnd(CloseStores)
+	CloseStores = UiPromptRegisterBegin()
+	UiPromptSetControlAction(CloseStores, Config.General.keys["G"])
+	str = VarString(10, 'LITERAL_STRING', str)
+	UiPromptSetText(CloseStores, str)
+	UiPromptSetEnabled(CloseStores, true)
+	UiPromptSetVisible(CloseStores, true)
+	UiPromptSetStandardMode(CloseStores, true)
+	UiPromptSetGroup(CloseStores, CloseGroup, 0)
+	UiPromptRegisterEnd(CloseStores)
 end
 
 RegisterNetEvent("vorp:SelectedCharacter")
@@ -311,14 +309,11 @@ end)
 function GetClosestPlayer()
 	local players, closestDistance, closestPlayer = GetActivePlayers(), -1, -1
 	local playerPed, playerId = PlayerPedId(), PlayerId()
-	local coords, usePlayerPed = coords, false
+	local usePlayerPed = true
+	local coords = GetEntityCoords(playerPed)
+	local playerid = 0
+	local tgt1 = 0
 
-	if coords then
-		coords = vector3(coords.x, coords.y, coords.z)
-	else
-		usePlayerPed = true
-		coords = GetEntityCoords(playerPed)
-	end
 
 	for i = 1, #players, 1 do
 		local tgt = GetPlayerPed(players[i])
@@ -344,9 +339,9 @@ function DrawText3D(x, y, z, text)
 	if onScreen then
 		SetTextScale(0.30, 0.30)
 		SetTextFontForCurrentCommand(1)
-		SetTextColor(255, 255, 255, 215)
+		BgSetTextColor(255, 255, 255, 215)
 		SetTextCentre(1)
-		DisplayText(str, _x, _y)
+		BgDisplayText(str, _x, _y)
 		local factor = (string.len(text)) / 225
 		DrawSprite("feeds", "hud_menu_4a", _x, _y + 0.0125, 0.015 + factor, 0.03, 0.1, 35, 35, 35, 190, false)
 	end
@@ -377,15 +372,15 @@ end
 )
 
 local function drawtext(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
-	local str = VarString(10, "LITERAL_STRING", str, Citizen.ResultAsLong())
+	str = VarString(10, "LITERAL_STRING", str, Citizen.ResultAsLong())
 	SetTextScale(w, h)
-	SetTextColor(math.floor(col1), math.floor(col2), math.floor(col3), math.floor(a))
+	BgSetTextColor(math.floor(col1), math.floor(col2), math.floor(col3), math.floor(a))
 	SetTextCentre(centre)
 	if enableShadow then
 		SetTextDropshadow(1, 0, 0, 0, 255)
 	end
 	Citizen.InvokeNative(0xADA9255D, 10);
-	DisplayText(str, x, y)
+	BgDisplayText(str, x, y)
 end
 
 local function createobject(x, y, z, objecthash)
@@ -393,8 +388,7 @@ local function createobject(x, y, z, objecthash)
 		wepobject = Citizen.InvokeNative(0x9888652B8BA77F73, objecthash, 0, x, y, z, true, 1.0)
 		h = GetEntityHeading(wepobject)
 		local tabley = GetEntityRotation(wepobject, 1)
-		local x, y, z = table.unpack(tabley)
-		roll = x
+		roll = tabley.x
 		if next(added) ~= nil then
 			for k, v in pairs(compss) do
 				RemoveWeaponComponentFromWeaponObject(wepobject, v.name)
@@ -460,7 +454,7 @@ CreateThread(function()
 				if dist < 1 then
 					sleep = 0
 					local Label = VarString(10, 'LITERAL_STRING', Config.Language.presstobuy)
-					PromptSetActiveGroupThisFrame(OpenGroup, Label)
+					UiPromptSetActiveGroupThisFrame(OpenGroup, Label, 0, 0, 0, 0)
 
 					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 						if Config.General.jobonly then
@@ -532,6 +526,7 @@ end)
 
 CreateThread(function()
 	repeat Wait(1000) until LocalPlayer.state.IsInSession
+	PromptSetUp2()
 	while true do
 		local letSleep = 1000
 
@@ -543,7 +538,7 @@ CreateThread(function()
 				if dist < 1 then
 					letSleep    = 0
 					local Label = VarString(10, 'LITERAL_STRING', Config.Language.presstocraft)
-					PromptSetActiveGroupThisFrame(OpenGroup, Label)
+					UiPromptSetActiveGroupThisFrame(OpenGroup, Label, 0, 0, 0, 0)
 
 					if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 						if Config.General.jobonly then
@@ -570,10 +565,10 @@ end)
 
 local function AddBlip(Store)
 	if Config.Stores[Store].showblip then
-		Config.Stores[Store].BlipHandle = N_0x554d9d53f696d002(1664425300, Config.Stores[Store].Pos.x, Config.Stores[Store].Pos.y, Config.Stores[Store].Pos.z)
+		Config.Stores[Store].BlipHandle = BlipAddForCoords(1664425300, Config.Stores[Store].Pos.x, Config.Stores[Store].Pos.y, Config.Stores[Store].Pos.z)
 		SetBlipSprite(Config.Stores[Store].BlipHandle, Config.Stores[Store].blipsprite, true)
 		SetBlipScale(Config.Stores[Store].BlipHandle, 0.2)
-		Citizen.InvokeNative(0x9CB1A1623062F402, Config.Stores[Store].BlipHandle, Config.Stores[Store].BlipName)
+		SetBlipName(Config.Stores[Store].BlipHandle, Config.Stores[Store].BlipName)
 	end
 end
 
@@ -601,7 +596,6 @@ CreateThread(function()
 	repeat Wait(1000) until LocalPlayer.state.IsInSession
 
 	PromptSetUp()
-	PromptSetUp2()
 	while true do
 		local player = PlayerPedId()
 		local coords = GetEntityCoords(player)
@@ -632,9 +626,9 @@ CreateThread(function()
 						if (distance <= 3.0) then -- check distance
 							sleep = 0
 							local Label = VarString(10, 'LITERAL_STRING', storeConfig.PromptName)
-							PromptSetActiveGroupThisFrame(CloseGroup, Label)
+							UiPromptSetActiveGroupThisFrame(CloseGroup, Label, 0, 0, 0, 0)
 							local label2 = VarString(10, 'LITERAL_STRING', Config.Language.closed .. storeConfig.StoreOpen .. Config.Language.am .. storeConfig.StoreClose .. Config.Language.pm)
-							PromptSetActiveGroupThisFrame(CloseGroup, label2)
+							UiPromptSetActiveGroupThisFrame(CloseGroup, label2, 0, 0, 0, 0)
 
 							if Citizen.InvokeNative(0xC92AC953F0A982AE, CloseStores) then
 								TriggerEvent("vorp:TipRight", Config.Language.closed .. storeConfig.StoreOpen .. Config.Language.am .. storeConfig.StoreClose .. Config.Language.pm, 3000)
@@ -665,7 +659,7 @@ CreateThread(function()
 						if (distance <= 3.0) then -- check distance
 							sleep = 0
 							local Label = VarString(10, 'LITERAL_STRING', storeConfig.PromptName)
-							PromptSetActiveGroupThisFrame(OpenGroup, Label)
+							UiPromptSetActiveGroupThisFrame(OpenGroup, Label, 0, 0, 0, 0)
 
 							if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then
 								currentshop = storeId
@@ -700,7 +694,7 @@ CreateThread(function()
 					if (distance <= 3.0) then -- check distance
 						sleep = 0
 						local Label = VarString(10, 'LITERAL_STRING', storeConfig.PromptName)
-						PromptSetActiveGroupThisFrame(OpenGroup, Label)
+						UiPromptSetActiveGroupThisFrame(OpenGroup, Label, 0, 0, 0, 0)
 
 						if Citizen.InvokeNative(0xC92AC953F0A982AE, OpenStores) then -- iff all pass open menu
 							currentshop = storeId
