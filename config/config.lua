@@ -27,7 +27,7 @@ Config.General = {
 
     craftingcost = false,
 
-    weaponshops = true,                                    -- endable or disable weapon shops
+    weaponshops = false,                                   -- endable or disable weapon shops 
 
     craftinganimations = "WORLD_HUMAN_CROUCH_INSPECT",     -- animation for crafting
 
