@@ -587,15 +587,13 @@ local function SpawnNPC(Store)
 		Config.Stores[Store].NPC = npc
 	end
 end
-
 CreateThread(function()
-	if not Config.General.weaponshops then
-		return
-	end
-
 	repeat Wait(1000) until LocalPlayer.state.IsInSession
 
 	PromptSetUp()
+	if not Config.General.weaponshops then
+		return
+	end
 	while true do
 		local player = PlayerPedId()
 		local coords = GetEntityCoords(player)
